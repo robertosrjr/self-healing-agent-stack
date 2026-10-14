@@ -1,0 +1,23 @@
+# Environment configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments and bytecode
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test and tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local application execution state and history
+application/.estado_execucao.json
+application/.historico_execucoes.json
+application/.historico_sessoes.json
