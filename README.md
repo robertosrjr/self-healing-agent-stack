@@ -5,6 +5,10 @@
 [![Issues abertas](https://img.shields.io/github/issues/robertosrjr/self-healing-agent-stack)](https://github.com/robertosrjr/self-healing-agent-stack/issues)
 [![Último commit](https://img.shields.io/github/last-commit/robertosrjr/self-healing-agent-stack)](https://github.com/robertosrjr/self-healing-agent-stack/commits/main)
 [![Linguagem principal](https://img.shields.io/github/languages/top/robertosrjr/self-healing-agent-stack)](https://github.com/robertosrjr/self-healing-agent-stack)
+![Status do projeto](https://img.shields.io/badge/status-prot%C3%B3tipo%20de%20estudo-blue)
+[![Arquitetura-alvo](https://img.shields.io/badge/arquitetura-alvo%20Self--Healing%20(SDD%20v2)-lightgrey)](docs/sdd/sdd_orquestrador_agentes_v2.md)
+![Runtime](https://img.shields.io/badge/runtime-ReAct-6f42c1)
+![Provedores LLM](https://img.shields.io/badge/LLM-Anthropic%20%7C%20OpenRouter-412991)
 
 Este repositório é um projeto de estudo sobre **orquestração de agentes de IA
 em ambientes corporativos**, com foco em revisão de código e auto-remediação

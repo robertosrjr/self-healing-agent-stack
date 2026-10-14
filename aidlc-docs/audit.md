@@ -126,3 +126,12 @@
 **Context:** Alteração documental no README raiz; badges apontam para o repositório atual e não alegam verificações ou suporte que não estejam configurados.
 
 ---
+
+## Atualização dos badges do README
+
+**Timestamp:** 2026-10-13T23:19:22-03:00
+**User Input:** O usuário compartilhou sugestões de badges e de cabeçalho para o README, incluindo CI/CD, cobertura, governança de IA, stack e licença.
+**AI Response:** Atualizei o cabeçalho com badges que correspondem ao estado verificável do repositório e não anunciam CI, cobertura, licença, Pydantic ou proteções de segurança ainda não configurados/implementados.
+**Context:** Alteração de documentação no README raiz; CI não foi anunciado porque não há workflows do GitHub Actions neste repositório.
+
+---
