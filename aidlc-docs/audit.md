@@ -117,3 +117,12 @@
 **Context:** Remediação da configuração do Git após bloqueio do GitHub por detecção de segredo em `application/.env`; o histórico antigo ainda precisa ser tratado antes de publicar commits que o contenham.
 
 ---
+
+## Badges do GitHub no README
+
+**Timestamp:** 2026-10-13T23:16:00-03:00
+**User Input:** "coloque o readm aquelas tags do github"
+**AI Response:** Adicionei ao README badges dinâmicos para estrelas, forks, issues abertas, último commit e linguagem principal. Não incluí badge de build/testes porque o repositório não possui workflow do GitHub Actions.
+**Context:** Alteração documental no README raiz; badges apontam para o repositório atual e não alegam verificações ou suporte que não estejam configurados.
+
+---

@@ -1,5 +1,11 @@
 # Orquestrador de agentes — estudo e arquitetura-alvo
 
+[![Stars](https://img.shields.io/github/stars/robertosrjr/self-healing-agent-stack?style=social)](https://github.com/robertosrjr/self-healing-agent-stack/stargazers)
+[![Forks](https://img.shields.io/github/forks/robertosrjr/self-healing-agent-stack?style=social)](https://github.com/robertosrjr/self-healing-agent-stack/network/members)
+[![Issues abertas](https://img.shields.io/github/issues/robertosrjr/self-healing-agent-stack)](https://github.com/robertosrjr/self-healing-agent-stack/issues)
+[![Último commit](https://img.shields.io/github/last-commit/robertosrjr/self-healing-agent-stack)](https://github.com/robertosrjr/self-healing-agent-stack/commits/main)
+[![Linguagem principal](https://img.shields.io/github/languages/top/robertosrjr/self-healing-agent-stack)](https://github.com/robertosrjr/self-healing-agent-stack)
+
 Este repositório é um projeto de estudo sobre **orquestração de agentes de IA
 em ambientes corporativos**, com foco em revisão de código e auto-remediação
 de falhas de CI/CD. A arquitetura-alvo está descrita no
