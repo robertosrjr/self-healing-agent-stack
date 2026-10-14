@@ -135,3 +135,12 @@
 **Context:** Alteração de documentação no README raiz; CI não foi anunciado porque não há workflows do GitHub Actions neste repositório.
 
 ---
+
+## Badges de IA-DLC e SDD
+
+**Timestamp:** 2026-10-13T23:22:10-03:00
+**User Input:** "coloca um ia-dlc" / "sdd" / "sei lá"
+**AI Response:** Interpretei o pedido como inclusão de dois badges no README: metodologia IA-DLC e arquitetura SDD v2, ligados aos respectivos documentos do projeto. Os badges identificam referências documentais; não indicam certificação nem prontidão de produção.
+**Context:** Atualização do cabeçalho do README raiz.
+
+---
