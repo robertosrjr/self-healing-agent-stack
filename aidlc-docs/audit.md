@@ -144,3 +144,48 @@
 **Context:** Atualização do cabeçalho do README raiz.
 
 ---
+
+## Consolidação da arquitetura-alvo — SDD v5
+
+**Timestamp:** 2026-10-14T09:13:46-03:00
+**User Input:** "pode criar a sdd_orquestrador_agentes_v5"
+**AI Response:** Criei `docs/sdd/sdd_orquestrador_agentes_v5.md` como consolidação arquitetural das versões 3 e 4, com distinção explícita entre arquitetura-alvo e capacidades implementadas, critérios operacionais e decisões pendentes.
+**Context:** Nova referência documental; versões anteriores preservadas como histórico. Links de entrada existentes ainda precisam ser atualizados em alteração coordenada.
+
+---
+
+## Retomada e reconciliação do fluxo IA-DLC
+
+**Timestamp:** 2026-10-14T09:44:50-03:00
+**User Input:** "revise o fluxo ia-dlc e vamos continuar"
+**AI Response:** Revisei o estado IA-DLC, o plano de execução, requisitos, histórias, design da aplicação e decomposição de unidades. Identifiquei que há artefatos gerados, mas o estado e os checklists não refletem corretamente o progresso; referências ainda apontam para SDD v2, embora a v5 tenha sido criada.
+**Context:** O fluxo permanece em checkpoint de aprovação de inception. Antes de sincronizar o estado com a v5 e iniciar Construction, solicitei confirmação explícita sobre a aprovação dos artefatos existentes e a atualização/alinhamento desses artefatos à SDD v5.
+
+**Approval Prompt Timestamp:** 2026-10-14T09:44:50-03:00
+**Approval Prompt:** "Você aprova os artefatos de requirements, user stories, execution plan, application design e units generation como base, autorizando alinhá-los à SDD v5, corrigir os registros/checklists do IA-DLC e avançar para a etapa de Construction?"
+**User Response:** "Sim — aprovo e siga para Construction (Recomendado)"
+**Status:** Aprovado. Os artefatos existentes serão alinhados à SDD v5 e o escopo de Construction será o próximo incremento Maker-Checker com contratos de entrada/saída validados, sem antecipar autorização externa ou guardrails.
+
+---
+
+## Esclarecimento sobre a retomada
+
+**Timestamp:** 2026-10-14T10:39:38-03:00
+**User Input:** "o que esta acontecendo aqui?"
+**AI Response:** Expliquei que estava reconciliando o estado IA-DLC, alinhando documentação aprovada à SDD v5 e que ainda não havia alterado código; reconheci uma falha de aplicação de patch causada por diferença de contexto.
+**Context:** Interrupção do usuário durante alinhamento documental; escopo mantido no próximo incremento Maker-Checker.
+
+## Atualização do README e continuidade
+
+**Timestamp:** 2026-10-14T10:39:38-03:00
+**User Input:** "atualize o readme raiz e vamos seguir"
+**AI Response:** Atualizei o README raiz para apontar à SDD v5, explicitar o R1 Maker-Checker como próximo incremento e distinguir a arquitetura-alvo do protótipo implementado. Continuei a reconciliação dos artefatos IA-DLC e gerei o Functional Design da U1.
+**Context:** Documentação e planejamento; nenhum código da aplicação foi alterado.
+
+## Aprovação do Functional Design — U1
+
+**Approval Prompt Timestamp:** 2026-10-14T10:39:38-03:00
+**Approval Prompt:** "O Functional Design da U1 está pronto para revisão. Você aprova e quer continuar para NFR Requirements, onde decidiremos a biblioteca/abordagem de validação de schemas?"
+**Status:** Aguardando resposta do usuário.
+
+---

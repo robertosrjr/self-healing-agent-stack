@@ -1,7 +1,7 @@
 # Mapa de Histórias por Unidade
 
-## U1 — Runtime e Orquestração Base
-- US-06: revisão e rastreabilidade de execução
+## U1 — Maker-Checker e Contratos de Schema
+- US-07: validar contratos de entrada e saída entre Maker e Checker
 
 ## U2 — Ingressão e Diagnóstico de Falhas
 - US-01: receber e classificar falhas de pipeline
@@ -17,11 +17,11 @@
 
 ## Verificação de cobertura
 
-Todas as histórias foram mapeadas para uma unidade principal, e a prioridade foi organizada em ordem de dependência de execução:
+Todas as histórias estão mapeadas para uma unidade principal, e a prioridade foi organizada em ordem de dependência de execução:
 
-1. diagnóstico e contexto,
-2. patch e justificativa,
-3. validação e gate,
-4. auditoria e rastreabilidade.
+1. contratos de agente (R1 / U1),
+2. diagnóstico e contexto (U2),
+3. patch e justificativa (U3),
+4. validação, gates, promoção e auditoria (U4).
 
 Esse sequenciamento minimiza retrabalho e estabelece uma base de entrega incremental.

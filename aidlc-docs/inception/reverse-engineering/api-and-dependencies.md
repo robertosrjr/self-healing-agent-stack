@@ -5,11 +5,11 @@
 No REST endpoint, webhook handler, OpenAPI document, or service API is
 currently implemented.
 
-The SDD v2 proposes a `PipelineFailureEventSchema` as a future event contract.
-Its required fields are `event_id`, `pipeline_id`, `repository_url`, `branch`,
-`commit_hash`, `failure_stage`, and `error_log_raw`; optional fields include
-environment and trigger timestamp. This schema is architecture documentation,
-not a validated runtime contract in the current application.
+The SDD v5 defines `PipelineFailureEvent` as a future event contract. It
+requires schema version, event/provider/pipeline/repository identity,
+commit hash, failure stage and timestamp. Repository URL, branch and bounded
+error log are needed to execute diagnosis; these are architecture
+requirements, not a validated runtime contract in the current application.
 
 ## Internal APIs
 
@@ -76,16 +76,19 @@ are Python module APIs, not network endpoints.
 - **Specialist output:** researcher and analyst are asked to emit JSON; current
   validation parses JSON but does not fully enforce a JSON Schema.
 
-### Target Contracts Documented by SDD v2
+### Target Contracts Documented by SDD v5
 
-- `PipelineFailureEventSchema`: event identity, pipeline/repository/commit
-  context, failure stage, raw log, optional environment and timestamp.
-- `SelfHealingReportSchema`: root-cause analysis, patch information,
-  regression-test status, and promotion status.
-- `FindingContract`: finding ID, category, severity, location, description,
-  and remediation suggestion.
+- `PipelineFailureEvent`: versioned event, provider/pipeline/repository identity,
+  commit, failure stage, timestamp and bounded diagnostic context.
+- `BusinessDomainCheck`: mode, explicit status/approval, violations and
+  guidance for universal contract checks or advanced RAG.
+- `SelfHealingReport`: final status, resilience, diagnosis, business-domain
+  result, protected patch reference, quality gates, PR/promotion and audit
+  reference.
 
 These target contracts are not yet implemented or validated in Python code.
+The immediate R1 Maker-Checker input/output contracts are documented in the
+IA-DLC functional design and are also not yet implemented.
 
 ## Internal Dependencies
 

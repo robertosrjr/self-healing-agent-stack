@@ -9,8 +9,8 @@
 - **Application Code:** `application/`
 - **AI-DLC Artifacts:** `aidlc-docs/`
 - **Existing Project Documentation:** `docs/`
-- **Architecture Reference:** `docs/sdd/sdd_orquestrador_agentes_v2.md`
-- **Current Stage:** Application Design review checkpoint; awaiting explicit approval to proceed to Units Generation and implementation.
+- **Architecture Reference:** `docs/sdd/sdd_orquestrador_agentes_v5.md`
+- **Current Stage:** CONSTRUCTION — Functional Design review checkpoint for U1 (Maker-Checker and Schema Contracts).
 
 ## Workspace State
 
@@ -30,13 +30,17 @@
 - [x] Reverse Engineering — `aidlc-docs/inception/reverse-engineering/`
 - [x] Requirements Analysis — completed around event-driven diagnosis, patching, testing, and governance
 - [x] User Stories — completed for DevOps, software engineering, QA, and governance personas
-- [x] Workflow Planning — execution plan created and ready for review
-- [x] Application Design — design plan and artifacts created and ready for review
-- [x] Units Generation — unit decomposition created and ready for review
+- [x] Workflow Planning — approved by the user on 2026-10-14; aligned to SDD v5
+- [x] Application Design — approved as the basis for incremental work; aligned to SDD v5
+- [x] Units Generation — approved by the user on 2026-10-14; U1 scoped to the R1 Maker-Checker increment
 
 ### CONSTRUCTION PHASE
 
-- [ ] Per-unit design and implementation — pending
+- [ ] U1 — Functional Design: Maker-Checker and schema contracts — artifacts complete; awaiting explicit approval
+- [ ] U1 — NFR Requirements — pending Functional Design approval
+- [ ] U1 — NFR Design — pending NFR Requirements approval
+- [ ] U1 — Infrastructure Design — skipped for the local prototype increment; reconsider when external execution infrastructure is introduced
+- [ ] U1 — Code Generation — pending design approvals
 - [ ] Build and Test — pending
 
 ### OPERATIONS PHASE
@@ -45,13 +49,13 @@
 
 ## Current Status
 
-- **Lifecycle Phase:** INCEPTION
-- **Current Stage:** Workflow Planning review checkpoint
-- **Next Stage:** Application Design and Units Generation (after approval)
-- **Status:** Waiting for explicit approval of the generated requirements, stories, and execution plan
+- **Lifecycle Phase:** CONSTRUCTION
+- **Current Stage:** Functional Design review — U1 (Maker-Checker and Schema Contracts)
+- **Next Stage:** NFR Requirements — U1 (after Functional Design approval)
+- **Status:** User approved the existing inception artifacts as a basis and authorized alignment to SDD v5 and continuation into Construction. Functional Design artifacts are complete; awaiting explicit approval to continue to NFR Requirements.
 
 ## Initial Scope
 
-Use the existing Step 1 ReAct prototype as a learning foundation and evolve it toward the CI/CD Self-Healing target described by SDD v2. The target includes pipeline-failure events, diagnosis, proposed fixes, regression testing, controlled DEV/STAGING promotion, deterministic authorization and quality gates, auditability, and human approval for Production promotion.
+Use the existing Step 1 ReAct prototype as a learning foundation and evolve it incrementally toward the architecture-target described by SDD v5. The immediate learning increment is an orchestrated Maker-Checker flow with validated input/output schemas. External authorization and guardrails remain subsequent increments; the target architecture also includes CI/CD failure intake, diagnosis, patch proposals, isolated regression testing, deterministic quality gates, auditability, and human approval for Production promotion. These target capabilities are not implied to exist in the current prototype.
 
-This work remains intentionally incremental: the project is currently a brownfield prototype, not a production-ready self-healing system. The next step is to translate the requirements and target architecture into a concrete design and implementation plan.
+This work remains intentionally incremental: the project is currently a brownfield prototype, not a production-ready self-healing system. R1 functional design is complete and awaiting review; after approval, define NFR/schema-validation technology, then continue per-unit design before code generation.

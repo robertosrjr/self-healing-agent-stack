@@ -4,7 +4,7 @@
 
 Este roadmap organiza a evolução do projeto de estudo para a arquitetura-alvo
 de orquestração corporativa e auto-remediação de CI/CD descrita no
-[SDD v2](./sdd/sdd_orquestrador_agentes_v2.md). Ele serve para acompanhar
+[SDD v5](./sdd/sdd_orquestrador_agentes_v5.md). Ele serve para acompanhar
 marcos, evidências e decisões de prontidão; não representa um compromisso de
 datas de entrega.
 
@@ -37,10 +37,10 @@ autorizações, gates de qualidade e promoções de ambiente.
 | **R3 — Ingressão e diagnóstico** | Definir e validar o evento de falha; relacionar logs e contexto do repositório; produzir diagnóstico estruturado com causa provável, evidências e severidade. | Payload inválido é rejeitado; diagnóstico tem contrato verificável e evidências rastreáveis; nenhuma alteração de código é executada nesta etapa. | **Planejado** |
 | **R4 — Proposta de correção e QA isolado** | Produzir uma proposta de patch limitada à causa identificada e executar testes de regressão em ambiente isolado. | A proposta tem escopo e justificativa; testes existentes e novos passam antes de qualquer avanço; falhas interrompem a promoção. | **Planejado** |
 | **R5 — Integração com eventos e STAGING** | Integrar gatilhos de CI/CD, preparar PR e habilitar progressão controlada para DEV/STAGING após os quality gates. | Eventos e resultados ficam associados à execução; gates determinísticos autorizam ou bloqueiam o avanço; evidências de teste acompanham a mudança. | **Planejado** |
-| **R6 — Governança de Produção** | Completar o plano de controle, trilha de auditoria e processo de aprovação para Produção. | Promoção a Produção exige aprovação humana ou gate determinístico estrito; decisões, aprovações e bloqueios são auditáveis. | **Planejado** |
+| **R6 — Governança de Produção** | Completar o plano de controle, trilha de auditoria e processo de aprovação para Produção. | Promoção a Produção exige aprovação humana explícita, além dos gates; decisões, aprovações e bloqueios são auditáveis. | **Planejado** |
 
 Os marcos R1 e R2 refletem a sequência de aprendizado definida nas diretrizes
-do projeto. R3 a R6 organizam as fases do SDD v2: diagnóstico, correção e QA,
+do projeto. R3 a R6 organizam as fases da SDD v5: diagnóstico, correção e QA,
 integração com eventos e STAGING, e governança de Produção.
 
 ## Acompanhamento de cada marco
@@ -82,14 +82,15 @@ controladas; em seguida, definir metas antes de qualquer piloto operacional.
   determinística explícita.
 - Testes inválidos, falhas de segurança ou ausência de evidências bloqueiam o
   avanço; não devem produzir resultados com aparência de sucesso.
-- Promoção para Produção permanece sujeita à aprovação humana ou a um gate
-  determinístico estrito.
+- Promoção para Produção exige aprovação humana explícita, além dos quality
+  gates determinísticos.
 - Limites atuais do protótipo (`MAX_PASSOS=10` e `TOKEN_BUDGET=20000` por
   execução de agente) não equivalem aos limites de evento propostos no SDD.
 
 ## Fontes
 
-- [SDD v2 — arquitetura-alvo e roteiro de implementação](./sdd/sdd_orquestrador_agentes_v2.md)
+- [SDD v5 — arquitetura-alvo consolidada](./sdd/sdd_orquestrador_agentes_v5.md)
+- [SDD v2 — versão histórica](./sdd/sdd_orquestrador_agentes_v2.md)
 - [Diretrizes e visão arquitetural do estudo](./sdd/diretrizes_estudo_orquestracao_agentes.md)
 - [Plano do Passo 1 — runtime ReAct](./plano_passo_1_runtime.md)
 - Requisitos e decomposição em unidades de trabalho mantidos em `aidlc-docs/`.

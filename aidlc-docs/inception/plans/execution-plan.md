@@ -4,7 +4,7 @@
 
 ### Transformation Scope
 
-This is a **brownfield evolution** of an existing Python prototype into a target Self-Healing orchestration architecture. The current runtime is a learning ReAct flow under `application/`; the target is the event-driven architecture described by `docs/sdd/sdd_orquestrador_agentes_v2.md`.
+This is a **brownfield evolution** of an existing Python prototype toward the target architecture in `docs/sdd/sdd_orquestrador_agentes_v5.md`. The current runtime is a learning ReAct flow under `application/`; the immediate implementation increment is R1, a Maker-Checker flow with validated input/output schemas.
 
 ### Change Impact Assessment
 
@@ -23,7 +23,7 @@ This is a **brownfield evolution** of an existing Python prototype into a target
 - `application/especialistas.py` — specialist agents and contract definitions
 - `application/ferramentas.py` — local tool registry and tool execution contracts
 - `application/config.py` — provider, token, and runtime configuration
-- `docs/sdd/sdd_orquestrador_agentes_v2.md` — target architecture and governance model
+- `docs/sdd/sdd_orquestrador_agentes_v5.md` — consolidated target architecture and governance model
 
 ### Risk Assessment
 
@@ -69,15 +69,15 @@ flowchart TD
 - [x] Requirements Analysis — completed; requirements were captured around event-driven diagnosis, patching, testing, and governance.
 - [x] User Stories — completed; stories cover diagnosis, patching, validation, and governance concerns.
 - [x] Workflow Planning — completed; execution plan generated and ready for review.
-- [ ] Application Design — recommended to execute before implementation.
-- [ ] Units Generation — recommended to execute before implementation.
+- [x] Application Design — generated and approved as the basis for incremental work; aligned to v5 and R1.
+- [x] Units Generation — generated and approved; U1 is Maker-Checker and schema contracts, using R0 as existing baseline.
 
 ### CONSTRUCTION PHASE
 
-- [ ] Functional Design — conditional; likely required once the target components and workflows are defined.
-- [ ] NFR Requirements — recommended; security, resilience, and deterministic quality gates are essential.
-- [ ] NFR Design — recommended; governance and guardrails must be incorporated into the architecture.
-- [ ] Infrastructure Design — conditional; likely required for webhook, CI/CD, and isolated execution environment planning.
+- [ ] Functional Design — U1 required; current checkpoint is awaiting user review.
+- [ ] NFR Requirements — U1 required to select schema validation approach and set local runtime constraints.
+- [ ] NFR Design — U1 required only for patterns needed by the selected NFR requirements.
+- [ ] Infrastructure Design — skipped for local R1; reconsider for webhook, CI/CD, sandbox, or external integrations.
 - [ ] Code Generation — required once the design is approved.
 - [ ] Build and Test — required after implementation.
 
@@ -87,12 +87,12 @@ flowchart TD
 
 ## Recommended Package / Component Update Sequence
 
-1. **Baseline architecture documentation** — lock the target state described in `docs/sdd/sdd_orquestrador_agentes_v2.md` as the source of truth for design decisions.
-2. **Runtime contract layer** — update `application/agente.py` and `application/orquestrador.py` to support structured pipeline events and execution state.
-3. **Specialist and tool contracts** — evolve `application/especialistas.py` and `application/ferramentas.py` so they can represent diagnosis, patch proposal, and QA work.
-4. **Config and governance layer** — add stricter validator, policy, and guardrail logic in `application/config.py` and adjacent modules.
-5. **Regression and audit tests** — tighten tests and tracing around failure handling, patch validation, and auditability.
-6. **Promotion and production controls** — add approval flows and deterministic gates in later increments after the core pipeline is stable.
+1. **R1 — Maker-Checker contracts** — add validated structured inputs/outputs to the current specialist flow; no external actions.
+2. **R2 — Authorization and guardrails** — add deterministic controls outside the LLM.
+3. **R3 — Failure intake and diagnosis** — implement validated CI/CD events and evidence-backed diagnosis.
+4. **R4 — Patch proposal and isolated QA** — introduce bounded patch/worktree workflow and regression testing.
+5. **R5 — CI/CD and non-production promotion** — add PR integration and gated DEV/STAGING.
+6. **R6 — Production governance** — add human approval tied to an immutable artifact and audit evidence.
 
 ## Estimated Timeline
 
@@ -114,4 +114,6 @@ The project succeeds when:
 
 ## Status
 
-This plan is ready for review. The recommended next phase is **Application Design**, followed by **Units Generation** and then the implementation increments for diagnosis and validation logic.
+**Approval:** User approved the inception artifacts on 2026-10-14 and authorized alignment to SDD v5 and continuation into Construction.
+
+**Current stage:** Functional Design for U1 (Maker-Checker and Schema Contracts); awaiting approval before NFR Requirements.

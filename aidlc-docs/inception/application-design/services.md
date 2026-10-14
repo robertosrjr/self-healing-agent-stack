@@ -31,8 +31,25 @@
 **Responsabilidade:** garantir observabilidade e rastreabilidade operacional.  
 **Saída esperada:** trilha completa com todos os eventos relevantes.
 
+## Escopo do incremento atual — R1 Maker-Checker
+
+### `MakerCheckerService`
+**Responsabilidade:** coordenar o encadeamento Maker -> validação determinística
+-> Checker -> validação determinística no runtime local.
+
+**Saída esperada:** resultado estruturado validado ou erro explícito; nunca
+retorna sucesso quando uma saída não satisfaz o contrato.
+
+### `ContractValidationService`
+**Responsabilidade:** validar entradas e saídas contra contratos versionados,
+incluindo parsing, campos obrigatórios, tipos e valores permitidos.
+
+**Saída esperada:** dados estruturados validados ou falha explícita com
+informação suficiente para diagnóstico, sem expor conteúdo sensível.
+
 ## Padrão de comunicação
 
 - Serviços de IA e análise produzem artefatos estruturados em dicionários ou objetos JSON.
 - Serviços determinísticos recebem esses artefatos e aplicam regras de promoção, autorização e validação.
 - O `SelfHealingService` funciona como ponto de composição para o ciclo completo, preservando o papel do control plane fora do modelo.
+- R1 não recebe webhooks, altera repositórios, aplica autorização externa ou implementa guardrails.

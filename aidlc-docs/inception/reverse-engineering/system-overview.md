@@ -6,10 +6,10 @@
 
 This workspace is a learning project for corporate AI-agent orchestration. Its
 current application demonstrates a ReAct loop and an orchestrator-workers
-pattern. The intended destination, specified by SDD v2, is an event-driven
+pattern. The intended destination, specified by SDD v5, is an event-driven
 Self-Healing system for diagnosing CI/CD failures, proposing and testing
 focused fixes, and controlling any promotion through deterministic policy and
-quality gates. SDD v2 also includes a corporate code-review pipeline; this
+quality gates. SDD v5 also includes a corporate code-review pipeline; this
 workflow start focuses on the Self-Healing subsystem while retaining that
 broader SDD scope as related architecture context.
 
@@ -30,7 +30,7 @@ Implemented today:
 4. **Record an execution:** The application stores execution metrics,
    responses, session summaries, and execution state in local JSON files.
 
-Target-state transactions from SDD v2, not implemented:
+Target-state transactions from SDD v5, not implemented:
 
 1. Receive a pipeline-failure event through a webhook.
 2. Retrieve logs and repository context to produce a structured diagnosis.
@@ -74,28 +74,32 @@ Text alternative: user prompt -> demonstration flow -> Jev routing and
 specialist agents -> ReAct runtime -> local sample tools and LLM provider;
 execution/session information is persisted locally as JSON.
 
-### Target Architecture from SDD v2
+### Target Architecture from SDD v5
 
 ```mermaid
 flowchart LR
     CICD[CI/CD failure] --> Webhook[Webhook trigger]
     Webhook --> Orchestrator[Self-Healing orchestrator]
     Orchestrator --> Diagnostic[Diagnostic worker]
-    Orchestrator --> Developer[DevFix worker]
+    Orchestrator --> Developer[DevFix Maker]
+    Orchestrator --> Domain[Business Domain Checker]
     Orchestrator --> QA[Regression QA worker]
     Diagnostic --> Orchestrator
-    Developer --> Orchestrator
+    Developer --> Domain
+    Domain --> QA
     QA --> Gate[Deterministic quality gate]
-    Gate --> Staging[DEV and STAGING promotion]
-    Gate --> Approval[Human approval for PROD]
-    Control[External policy and guardrails] --> Orchestrator
+    Gate --> PR[Pull Request]
+    PR --> Staging[DEV and STAGING promotion]
+    Staging --> Approval[Human approval for PROD]
+    Control[External policy and input/output guardrails] --> Orchestrator
     Audit[Audit trail and task ledger] --> Orchestrator
 ```
 
-Text alternative: a CI/CD event triggers diagnosis, patch proposal, isolated
-regression testing, and deterministic quality gates; external policies govern
-tool actions and Production promotion requires the approval described by SDD
-v2.
+Text alternative: an authenticated CI/CD event passes reproducibility and
+sanitization checks, then triggers diagnosis, patch proposal, domain/contract
+review, isolated regression testing and deterministic quality gates. Changes
+are isolated in a worktree; external policy governs actions and production
+promotion requires explicit human approval.
 
 ### Current Data Flow
 
@@ -142,7 +146,7 @@ the answer. The CLI displays the result and local history summaries.
 | `application/roteamento_jev.py` | External decision client | Calls TypeSafe Jev to choose analysis vs explanation and validates the choice/confidence. | `typesafe-sdk`, `config.py`. |
 | `application/config.py` | Configuration module | Loads `.env`, selects provider/model, stores limits and validates provider credentials. | `python-dotenv` when installed. |
 | `application/tests/` | Test package | Exercises JSON parsing, history, flow, OpenRouter protocol, and Jev routing with mocks. | `unittest`, `pytest`, mocked external SDKs. |
-| `docs/` | Documentation | Holds the learning guidelines, Step 1 plan, and Self-Healing SDD v2. | None. |
+| `docs/` | Documentation | Holds the learning guidelines, Step 1 plan, and consolidated Self-Healing SDD v5 (with v2-v4 retained as history). | None. |
 
 ## Code Structure and Patterns
 
@@ -215,7 +219,7 @@ for a durable, access-controlled, tamper-evident audit store.
 No application Dockerfile, container orchestration manifest, Terraform,
 CloudFormation, CDK package, webhook server, HTTP API definition, deployment
 script, or application CI/CD workflow was detected in the current workspace.
-The containers, event trigger, security plane, and deployment flow in SDD v2
+The containers, event trigger, security plane, and deployment flow in SDD v5
 are architecture targets only.
 
 ## Technology Stack
@@ -230,7 +234,7 @@ are architecture targets only.
 | `pytest` | Installed in active environment; not declared in `requirements.txt` | Test runner. |
 | Python standard library | Runtime-provided | Thread pool, JSON, AST, filesystem, timing, dataclasses, and unittest. |
 
-## Current-State Gaps Against SDD v2
+## Current-State Gaps Against SDD v5
 
 The existing code does not yet implement:
 

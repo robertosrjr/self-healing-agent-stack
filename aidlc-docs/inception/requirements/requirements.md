@@ -2,14 +2,14 @@
 
 ## Intent Analysis Summary
 
-- **User request:** Start the project using the IA-DLC methodology and ground the work in the SDD documents under `docs/sdd/`.
+- **User request:** Start the project using the IA-DLC methodology and ground the work in the SDD documents under `docs/sdd/`; the active target reference is now SDD v5.
 - **Request type:** New project evolution from an existing brownfield prototype.
 - **Scope estimate:** System-wide transformation across the current ReAct prototype and the target Self-Healing architecture.
 - **Complexity estimate:** Complex.
 
 ## Context
 
-The current repository contains a learning prototype in `application/` that demonstrates an orchestrator-workers runtime and specialist agents. The target architecture described in `docs/sdd/sdd_orquestrador_agentes_v2.md` defines an event-driven Self-Healing pipeline with:
+The current repository contains a learning prototype in `application/` that demonstrates an orchestrator-workers runtime and specialist agents. The target architecture described in `docs/sdd/sdd_orquestrador_agentes_v5.md` defines an event-driven Self-Healing pipeline with:
 
 1. webhook-triggered pipeline failure events,
 2. diagnostic workers for logs + repo context,
@@ -18,12 +18,14 @@ The current repository contains a learning prototype in `application/` that demo
 5. deterministic quality gates for promotion,
 6. human approval or strict deterministic gate for Production.
 
+The next implementation increment is deliberately narrower than the target architecture: a Maker-Checker flow with validated input/output schemas in the current local prototype. External authorization and input/output guardrails remain later learning increments; no webhook, repository mutation, sandbox, CI/CD promotion, or production approval is included in this increment.
+
 The prototype does not yet implement those capabilities; it is a Step 1 runtime exercise. This project should evolve it deliberately toward the architecture-aligned target while preserving the current learning context and documentation.
 
 ## Functional Requirements
 
 1. **Project foundation and architecture traceability**
-   - The project must be grounded in the architecture described in `docs/sdd/sdd_orquestrador_agentes_v2.md`.
+   - The project must be grounded in the architecture described in `docs/sdd/sdd_orquestrador_agentes_v5.md`.
    - The prototype in `application/` must be treated as the current baseline, not as the target production state.
 
 2. **Event-driven failure intake**
@@ -79,6 +81,7 @@ The prototype does not yet implement those capabilities; it is a Step 1 runtime 
 - The project must preserve the distinction between the implemented runtime and the target SDD architecture.
 - Future work should evolve the current ReAct orchestrator incrementally toward the target design in a controlled, testable manner.
 - The app should remain compatible with the existing developer workflow in `application/` and the standard test command: `python -m pytest tests -q`.
+- The first implementation increment must validate Maker and Checker inputs/outputs against explicit schemas and fail explicitly on invalid or inconclusive results.
 
 ## Success Criteria
 

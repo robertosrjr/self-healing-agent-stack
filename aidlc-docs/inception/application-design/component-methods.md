@@ -13,6 +13,17 @@ Os métodos abaixo representam a superfície pública de alto nível. A lógica 
 - `obter_resumo_execucao() -> dict`
   - Retorna métricas, histórico e estado da sessão.
 
+## Componentes do incremento atual — R1
+
+### `MakerCheckerService`
+- `executar(entrada: dict) -> dict`
+  - Valida a entrada, invoca o Maker, valida sua saída, invoca o Checker e
+    valida a decisão estruturada antes de devolver sucesso.
+
+### `ContractValidator`
+- `validar(dados: object, schema: dict) -> dict`
+  - Retorna dados validados ou falha explícita com erros de validação.
+
 ## `PipelineEventIngress`
 
 - `receber_evento(evento: dict) -> dict`
@@ -53,7 +64,7 @@ Os métodos abaixo representam a superfície pública de alto nível. A lógica 
 - `promover(decisao: dict) -> dict`
   - Executa o estado de promoção por ambiente.
 - `solicitar_aprovacao_producao() -> dict`
-  - Solicita explicitamente aprovação humana para produção.
+  - Solicita aprovação humana explícita para produção, obrigatória além dos gates.
 
 ## `AuditTrail`
 

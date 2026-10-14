@@ -2,9 +2,30 @@
 
 ## Visão geral
 
-Este design define a arquitetura de alto nível para evoluir o protótipo atual em `application/` em direção ao fluxo de Self-Healing do SDD v2. O objetivo é separar claramente: (1) entrada de eventos, (2) diagnóstico, (3) proposta de correção, (4) validação, (5) promoção e (6) auditoria.
+Este design define a arquitetura de alto nível para evoluir o protótipo atual em `application/` em direção à arquitetura-alvo da [SDD v5](../../../docs/sdd/sdd_orquestrador_agentes_v5.md). O objetivo é separar claramente: (1) entrada de eventos, (2) diagnóstico, (3) proposta de correção, (4) validação, (5) promoção e (6) auditoria.
 
 ## Componentes
+
+### Escopo imediato — Maker-Checker e contratos de schema (R1)
+
+#### `MakerCheckerService`
+**Propósito:** coordenar um fluxo Maker -> validação determinística -> Checker -> validação determinística no protótipo atual.  
+**Responsabilidades:**
+- validar dados estruturados antes de invocar o Maker;
+- validar a saída do Maker antes de encaminhá-la ao Checker;
+- validar a saída do Checker e restringir decisões a valores permitidos;
+- retornar sucesso somente depois que todas as validações determinísticas passarem.
+
+#### `ContractValidator`
+**Propósito:** analisar saída estruturada e validar dados contra schemas declarados.  
+**Responsabilidades:**
+- rejeitar JSON inválido, campos obrigatórios ausentes, tipos incorretos e valores inválidos;
+- relatar falhas de validação explicitamente, sem convertê-las em sucesso do modelo;
+- manter validação de contrato independente do julgamento do LLM.
+
+Este incremento usa o runtime ReAct e os especialistas existentes. Não inclui
+webhook/CI/CD, alteração de repositório, autorização externa, guardrails,
+sandbox ou implantação.
 
 ### 1. `RuntimeOrchestrator`
 **Propósito:** orquestrar o ciclo de execução do agente e o fluxo ReAct atual.  
@@ -103,6 +124,8 @@ Este design define a arquitetura de alto nível para evoluir o protótipo atual 
 ## Padrões de composição
 
 - O `RuntimeOrchestrator` permanece como camada de execução do protótipo, mas deve evoluir para uma orquestração de workflow de auto-remediação.
+- No R1, `MakerCheckerService` coordena trabalhadores existentes e `ContractValidator` valida cada fronteira antes do avanço.
 - O raciocínio do modelo deve ser separado da autorização e decisão determinística.
 - Cada etapa do fluxo deve produzir artefatos estruturados: diagnóstico, patch, teste e decisão de promoção.
 - O registro em `AuditTrail` deve ser usado como fonte de verdade para observabilidade e auditoria.
+- Webhooks, autorização externa, guardrails, sandbox e promoção permanecem como arquitetura-alvo futura.

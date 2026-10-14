@@ -82,8 +82,20 @@ This project has multiple stakeholders and a clear target state, so the story se
 2. The audit trail is immutable or append-only in practical terms.
 3. Each artifact is traceable to the originating pipeline event.
 
+### US-07: Validate Maker-Checker contracts
+**As a** developer learning the agent orchestration workflow  
+**I want** Maker and Checker outputs to be validated against explicit schemas  
+**So that** malformed or incomplete model responses cannot silently advance the workflow.
+
+**Acceptance Criteria**
+1. The flow validates structured input before invoking the relevant worker.
+2. Maker output is parsed and validated against its declared output schema before it is passed to Checker.
+3. Checker output is parsed and validated against its declared output schema before the flow returns a result.
+4. Invalid JSON, missing fields, invalid field types, or an invalid Checker decision fail explicitly and do not produce a success-shaped result.
+5. The flow does not add webhook intake, repository mutation, authorization, guardrails, or deployment in this increment.
+
 ## Story Coverage
 
-The stories cover the end-to-end path from pipeline failure to safe promotion, mapped to the personas involved in the operating model: diagnosis, patching, QA validation, governance, and auditability.
+Stories US-01 through US-06 describe the eventual target lifecycle. US-07 scopes the immediate learning increment to Maker-Checker contract validation in the existing local prototype.
 
 These user stories meet the INVEST criteria by being independent, negotiable, valuable, estimable, small enough to plan incrementally, and testable through clear acceptance criteria.

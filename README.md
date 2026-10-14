@@ -6,16 +6,16 @@
 [![Último commit](https://img.shields.io/github/last-commit/robertosrjr/self-healing-agent-stack)](https://github.com/robertosrjr/self-healing-agent-stack/commits/main)
 [![Linguagem principal](https://img.shields.io/github/languages/top/robertosrjr/self-healing-agent-stack)](https://github.com/robertosrjr/self-healing-agent-stack)
 ![Status do projeto](https://img.shields.io/badge/status-prot%C3%B3tipo%20de%20estudo-blue)
-[![Arquitetura-alvo](https://img.shields.io/badge/arquitetura-alvo%20Self--Healing%20(SDD%20v2)-lightgrey)](docs/sdd/sdd_orquestrador_agentes_v2.md)
+[![Arquitetura-alvo](https://img.shields.io/badge/arquitetura-alvo%20Self--Healing%20(SDD%20v5)-lightgrey)](docs/sdd/sdd_orquestrador_agentes_v5.md)
 [![Metodologia IA-DLC](https://img.shields.io/badge/metodologia-IA--DLC-0A7B83)](aidlc-docs/aidlc-state.md)
-[![SDD v2](https://img.shields.io/badge/arquitetura-SDD%20v2-6f42c1)](docs/sdd/sdd_orquestrador_agentes_v2.md)
+[![SDD v5](https://img.shields.io/badge/arquitetura-SDD%20v5-6f42c1)](docs/sdd/sdd_orquestrador_agentes_v5.md)
 ![Runtime](https://img.shields.io/badge/runtime-ReAct-6f42c1)
 ![Provedores LLM](https://img.shields.io/badge/LLM-Anthropic%20%7C%20OpenRouter-412991)
 
 Este repositório é um projeto de estudo sobre **orquestração de agentes de IA
 em ambientes corporativos**, com foco em revisão de código e auto-remediação
 de falhas de CI/CD. A arquitetura-alvo está descrita no
-[SDD v2](docs/sdd/sdd_orquestrador_agentes_v2.md) e nas
+[SDD v5](docs/sdd/sdd_orquestrador_agentes_v5.md) e nas
 [diretrizes do estudo](docs/sdd/diretrizes_estudo_orquestracao_agentes.md).
 Ela combina agentes especialistas com controles determinísticos para apoiar
 diagnóstico, proposta de correções, testes e promoção governada de mudanças.
@@ -117,7 +117,7 @@ O protótipo demonstra:
 - orçamento de tokens por execução de agente (`TOKEN_BUDGET`, padrão `20000`);
 - registro de métricas e histórico das execuções.
 
-Ainda não estão implementados os componentes centrais do SDD v2: webhook de
+Ainda não estão implementados os componentes centrais do SDD v5: webhook de
 falha de CI/CD, Diagnostic Worker integrado ao repositório e aos logs,
 geração/aplicação de patches, execução isolada de testes, PEP/PDP com
 políticas *deny-by-default*, guardrails, trilha de auditoria imutável,
@@ -125,12 +125,12 @@ integração de PR/deploy ou aprovação de Produção.
 
 ### Diferenças em relação aos parâmetros do SDD
 
-O SDD v2 especifica limites e controles para o sistema-alvo, incluindo
-`MAX_PASSOS` de 5 por subagente, até 2 tentativas de remediação e orçamento de
-25.000 tokens por evento. O protótipo, por outro lado, usa `MAX_PASSOS=10` e
-`TOKEN_BUDGET=20000` **por execução de agente**. Esses valores não equivalem a
-um limite agregado por evento; precisam ser revistos quando o fluxo de
-auto-remediação for implementado.
+O SDD v5 especifica limites e controles para o sistema-alvo, incluindo
+`MAX_REACT_STEPS_PER_WORKER=5`, até `MAX_HEALING_ATTEMPTS_PER_EVENT=2` e
+`TOKEN_BUDGET_PER_EVENT=35000` agregado entre agentes e tentativas. O protótipo,
+por outro lado, usa `MAX_PASSOS=10` e `TOKEN_BUDGET=20000` **por execução de
+agente**. Esses valores não equivalem aos limites agregados do SDD e precisarão
+ser revistos quando o fluxo de auto-remediação for implementado.
 
 O orçamento de tokens é verificado com base no uso reportado pelo provedor
 após cada resposta. Assim, ele interrompe ferramentas e iterações seguintes
@@ -139,7 +139,7 @@ quando aplicável, mas não cancela uma chamada ao modelo já em andamento.
 ## Documentos do estudo
 
 - [Roadmap do produto — marcos, critérios e indicadores](docs/roadmap_produto.md)
-- [SDD v2 — arquitetura-alvo e fases de implementação](docs/sdd/sdd_orquestrador_agentes_v2.md)
+- [SDD v5 — arquitetura-alvo e fases de implementação](docs/sdd/sdd_orquestrador_agentes_v5.md)
 - [Diretrizes do estudo de orquestração](docs/sdd/diretrizes_estudo_orquestracao_agentes.md)
 - [Plano do Passo 1 — runtime ReAct](docs/plano_passo_1_runtime.md)
 
@@ -196,13 +196,21 @@ python -m pytest tests -q
 Os testes exercitam o loop e os fluxos com dependências externas simuladas;
 eles não validam uma integração real com CI/CD ou implantação.
 
-## Roteiro previsto no SDD v2
+## Próximo incremento e arquitetura-alvo
 
-1. **Core ReAct e diagnóstico:** exercitar o runtime e implementar o diagnóstico
-   de uma falha de pipeline a partir de evento, logs e contexto do código.
-2. **Correção e QA:** propor um patch limitado à causa raiz e executar testes
-   de regressão em ambiente isolado.
-3. **Eventos e Staging:** integrar o gatilho de CI/CD, criar PR e automatizar a
-   implantação em Homologação após os gates definidos.
-4. **Governança e Produção:** adicionar autorização externa, guardrails,
-   auditoria e aprovação humana obrigatória para promoção de Produção.
+O próximo incremento de aprendizado é o **R1 — Maker-Checker e contratos**:
+um fluxo sequencial em que um agente produz um resultado, outro o verifica e
+os dados de entrada e saída são validados por schema. O plano de implementação
+incremental está no [roadmap do produto](docs/roadmap_produto.md).
+
+A SDD v5 também descreve etapas futuras de ingestão de eventos, diagnóstico,
+propostas de correção, QA isolado, gates, promoção e governança:
+
+- contratos autenticados e ingestão idempotente de eventos;
+- diagnóstico e proposta de patch em contexto isolado;
+- validação de domínio, QA independente e quality gates determinísticos;
+- criação de PR e promoção controlada a DEV/STAGING;
+- autorização externa, auditoria e aprovação humana para Produção.
+
+Essas capacidades são arquitetura-alvo, não funcionalidades já disponíveis
+no protótipo.
