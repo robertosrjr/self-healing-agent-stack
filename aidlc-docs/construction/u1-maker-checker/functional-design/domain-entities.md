@@ -46,7 +46,7 @@ resultado inconclusivo e não dispara aprovação.
 | `request_id` | string | Sim | Ecoa o identificador do request validado. |
 | `status` | enum | Sim | `APPROVED`, `REJECTED` ou `INCONCLUSIVE`. |
 | `maker_result` | `MakerResult` | Sim | Resultado validado do Maker. |
-| `checker_result` | `CheckerResult` | Sim | Decisão validada do Checker. |
+| `checker_result` | `CheckerResult` ou nulo | Sim | Nulo somente quando o Maker retorna inconclusivo e o Checker não é invocado. |
 
 `status` deve corresponder à decisão do Checker. Erros de parsing/schema e
 falhas operacionais são exceções explícitas e não são serializados como uma

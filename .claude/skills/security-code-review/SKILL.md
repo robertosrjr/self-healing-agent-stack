@@ -1,39 +1,59 @@
 ---
 name: security-code-review
-description: "Use when reviewing Java/Spring code changes for application security: hardcoded secrets, SQL/JPQL/command injection, unsafe deserialization, weak cryptography or TLS settings, and sensitive details leaked in API error responses. For hexagonal architecture rules use architecture-guidance; for PII in telemetry use lgpd-sre-compliance-skill; for prompt injection use saif-skill."
+description: "Use when reviewing Python application changes for secrets, injection, unsafe deserialization, cryptography/TLS mistakes, dependency risks, or sensitive error leakage. For prompt injection and agent/tool governance use saif-skill."
 ---
 
-# Skill: Security Code Review
+# Revisão de Segurança de Código Python
 
-## Objetivo
-Analisar alterações de código Java/Spring em busca de vulnerabilidades de segurança de aplicação e exposição de credenciais.
+Revise alterações Python com base em riscos presentes no código e nas
+dependências reais. Esta skill cobre segurança de aplicação; segurança de
+agentes e conteúdo não confiável também exige a skill SAIF.
 
-## Regras de Avaliação
+## Áreas de revisão
 
-### 1. Segredos Hardcoded (CRITICAL)
-- **Regra**: Nenhuma chave de API, token JWT, senha ou credencial de banco pode estar estática no código ou em configuração versionada.
-- **Detecção**: Atribuições como `API_KEY = "..."`, `SECRET = "..."`, `password = "..."`, `spring.datasource.password=` com valor literal.
-- **Ação**: Marcar como `CRITICAL` e exigir variável de ambiente (`System.getenv()`, `${VAR}` no `application.yml`) ou cofre de segredos (Vault, Secrets Manager).
+### Segredos e configuração
 
-### 2. Injeção (CRITICAL)
-- **Regra**: Nenhuma consulta SQL/JPQL ou comando de sistema montado por concatenação com dado externo.
-- **Detecção**: `"SELECT ... " + param`, `createQuery("..." + param)`, `Runtime.exec`/`ProcessBuilder` com entrada do usuário.
-- **Ação**: Exigir parâmetros ligados (`?`, `:param`, `@Query` com parâmetros, Criteria API) e lista de valores permitidos para comandos.
+- Procure chaves, tokens, senhas e credenciais em código, exemplos, testes,
+  logs e arquivos de configuração versionados.
+- Use variáveis de ambiente ou secret manager apropriado ao ambiente.
+- Arquivos `.env` locais não devem ser commitados; verifique `.gitignore` e
+  forneça somente placeholders em `.env.example`.
 
-### 3. Desserialização Insegura (CRITICAL)
-- **Regra**: Não desserializar dados não confiáveis com `ObjectInputStream` nem habilitar tipagem polimórfica irrestrita no Jackson (`enableDefaultTyping`, `@JsonTypeInfo(use = Id.CLASS)`).
-- **Ação**: Usar DTOs explícitos e, se houver polimorfismo, lista de subtipos permitidos.
+### Injeção e execução de comandos
 
-### 4. Criptografia e Transporte (MAJOR)
-- **Regra**: Nada de algoritmos fracos (`MD5`, `SHA-1` para senhas, `DES`, `ECB`) nem desativação de validação TLS (`TrustAll`, `HostnameVerifier` que aceita tudo).
-- **Ação**: Senhas com `BCryptPasswordEncoder`/Argon2; TLS com validação padrão.
+- SQL: use parâmetros da biblioteca, nunca concatene entrada em consultas.
+- Shell: evite `shell=True` com dados externos; prefira argumentos explícitos,
+  allowlists e validação.
+- Template, path e URL: valide nomes, escopo e destino; evite traversal, SSRF e
+  interpolação de conteúdo não confiável.
+- Não trate prompt injection como SQL injection; delimitação de contexto não
+  substitui controles SAIF.
 
-### 5. Vazamento em Respostas de Erro (MAJOR)
-- **Regra**: Respostas de API não expõem stack trace, SQL, nomes de classes internas ou segredos.
-- **Ação**: Tratar exceções com `ProblemDetail` genérico (ver `api-design-guidance`) e registrar o detalhe só no log, sem PII.
+### Desserialização e parsing
 
-## Fora do escopo desta skill
-- Regra de dependência da Arquitetura Hexagonal → `architecture-guidance`.
-- Injeção de dependência pelo construtor e demais regras de Clean Code → `code-quality-guidance`.
-- Dados pessoais em logs, traces e métricas → `lgpd-sre-compliance-skill`.
-- Prompt injection e segurança de pipelines de IA → `saif-skill`.
+- Não use `pickle` para conteúdo não confiável.
+- Em YAML, use loader seguro; valide dados com schema explícito.
+- Não confie em `eval`/`exec` ou em coerção permissiva de tipos.
+- Valide JSON de modelos antes de usar em decisões; campos inesperados e enums
+  inválidos devem falhar fechado.
+
+### Criptografia, TLS e dependências
+
+- Use primitives mantidas e protocolos seguros da biblioteca padrão/SDK; não
+  escreva criptografia própria nem desative validação TLS.
+- Revise versões, origem e necessidade de dependências adicionadas.
+- Não atribua vulnerabilidade sem evidência do uso e do caminho de ataque.
+
+### Erros e logs
+
+- Respostas externas não devem incluir traceback, segredo, prompt ou payload
+  rejeitado. Exponha mensagens técnicas apenas onde a política permitir.
+- Preserve erros operacionais de forma explícita; não os transforme em
+  resultado aprovado ou fallback de sucesso.
+- Verifique que testes não imprimem nem registram credenciais reais.
+
+## Como reportar
+
+Indique localização, pré-condições, impacto, confiança e remediação mínima.
+Diferencie vulnerabilidade explorável de endurecimento preventivo. Não descreva
+capacidades de autorização, guardrails ou auditoria que ainda não existem.

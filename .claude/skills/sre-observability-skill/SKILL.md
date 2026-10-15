@@ -1,30 +1,47 @@
 ---
 name: sre-observability-skill
-description: "Use when reviewing end-to-end SRE observability across structured logs, latency, traffic, errors, saturation, distributed tracing, SLO evidence, and telemetry privacy."
+description: "Use when reviewing observability for Python systems: structured logs, latency, traffic, errors, saturation, tracing, SLO evidence, and telemetry privacy."
 ---
 
-# SRE Observability
+# Observabilidade SRE para Python
 
-## Scope
-
-Use this skill as the coordinating review for logs, metrics, traces, and operational evidence. Delegate implementation details to specialist skills.
+Coordene a análise de logs, métricas, traces e evidências operacionais.
+Diferencie sempre o protótipo Python local da futura plataforma de
+auto-remediação descrita na SDD v5.
 
 ## Workflow
 
-1. Inspect telemetry libraries, raw console output, logging configuration, meters, spans, and exporters.
-2. Map the Four Golden Signals: latency, traffic, errors, and saturation.
-3. Check correlation across request ID, trace ID, span ID, logs, metrics, and spans.
-4. Check cardinality, sampling, retention, alert usefulness, and sensitive-data minimization.
-5. Propose the smallest implementation that closes the highest-value gap.
-6. Compile, run focused tests, and record residual risks and SLO impact.
+1. Inventarie chamadas a `logging`, `print`, SDKs externos e armazenamento de
+   métricas/traces efetivamente configurados.
+2. Mapeie latência, tráfego, erros e saturação para componentes que realmente
+   recebem carga operacional.
+3. Verifique correlação por identificadores de execução e, se distribuído,
+   trace/span IDs.
+4. Revise cardinalidade, amostragem, retenção e minimização de dados sensíveis.
+5. Proponha a menor mudança mensurável; não adicione telemetria de produção ao
+   protótipo sem requisitos ou consumidor definido.
+6. Execute testes focados e informe riscos residuais e SLOs apenas quando
+   existirem medidas e metas acordadas.
 
-## Rules
+## Regras
 
-- Prefer stable names and low-cardinality dimensions.
-- Never add payloads or personal data to telemetry for convenience.
-- Avoid duplicate instrumentation supplied by the framework.
-- Use `spring-logging-skill`, `spring-metrics-skill`, `spring-tracing-skill`, `resilience-checker-skill`, and `lgpd-sre-compliance-skill` for specialist decisions.
+- Use dimensões estáveis e de baixa cardinalidade; nunca IDs, prompts ou PII
+  como labels de métricas.
+- Não registre conteúdo integral de prompts, respostas, contexto de repositório
+  ou chaves de API por conveniência.
+- `print` existente no protótipo não equivale a logging estruturado ou trilha
+  de auditoria confiável.
+- Use as skills agnósticas de [logging](../agnostic-logging/SKILL.md),
+  [metrics](../agnostic-metrics/SKILL.md),
+  [tracing](../agnostic-tracing/SKILL.md) e
+  [privacy](../agnostic-privacy/SKILL.md) como referências especializadas.
+- Coordene limites de chamadas com
+  [resiliência](../resilience-checker-skill/SKILL.md) e privacidade com
+  [LGPD](../lgpd-sre-compliance-skill/SKILL.md).
 
-## Reference
+## Estado do projeto
 
-See `references/sre-observability-skill.md` for the detailed SRE review framework.
+O R1 é executado localmente, sem API HTTP, exporters de métricas/traces ou
+SLOs operacionais definidos. A instrumentação de chamadas LLM, workers,
+execuções de pipeline e auditoria pertence a marcos futuros e deve evitar
+confundir métricas de aprendizado com evidência de produção.

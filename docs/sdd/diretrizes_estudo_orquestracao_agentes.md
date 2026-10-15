@@ -69,7 +69,7 @@ Quando a complexidade excede a capacidade de um único agente, utilizam-se cinco
 
 1. **Sequencial (Pipeline):** Encadeamento linear determinístico onde a saída do Agente A alimenta diretamente o Agente B.
 2. **Concorrente (Paralelo):** Múltiplos agentes analisam a mesma entrada em paralelo sob diferentes perspectivas (ex: Arquitetura, Segurança e Qualidade) e um consolidador agrupa as saídas.
-3. **Chat em Grupo / *Maker-Checker*:** Discussão colaborativa ou ciclo de criação e validação cruzada entre um especialista criador (*Maker*) e um auditor (*Checker*).
+3. **Chat em Grupo / *Maker-Checker*:** Duas formas de colaboração: discussão entre agentes ou ciclo de criação e validação cruzada entre um especialista criador (*Maker*) e um auditor (*Checker*). O escopo implementado neste projeto cobre a variante *Maker-Checker*, não uma conversa aberta em grupo.
 4. **Transferência Dinâmica (*Handoff* / Triagem):** Roteamento progressivo onde o controle total é delegado de um agente para outro à medida que o contexto evolui.
 5. **Magêntico / Planejamento Adaptativo:** Um orquestrador central mantém um registro dinâmico de tarefas (*task ledger*) para metas abertas, atribuindo e reordenando subtarefas conforme a execução avança.
 
@@ -92,6 +92,55 @@ O cenário prático de aplicação adotado no estudo é a **Esteira de Revisão 
 ---
 
 ## 7. Próximos Passos do Roteiro de Aprendizado
-1. **Consolidação do Passo 1:** Exercitar o laço ReAct com ferramentas locais e tratamento estrito de exceções.
-2. **Implementação do Passo 2:** Construir um pipeline sequencial de 2 agentes (*Maker-Checker*) com validação de esquema de entrada e saída.
-3. **Evolução para o Passo 3:** Adicionar a camada de autorização determinística externa (*Deny-by-Default*) e *Guardrails* de entrada/saída.
+### Passo 1 — Runtime ReAct: concluído
+
+O runtime ReAct e o fluxo com ferramentas locais estão exercitados e registrados
+no [plano do Passo 1](../plano_passo_1_runtime.md).
+
+### Passo 2 — Padrões multiagente: concluído
+
+Os cinco padrões da seção 5 foram exercitados no protótipo: pipeline
+sequencial, execução paralela de agentes, colaboração (na variante
+*Maker-Checker*), transferência *handoff* e planejamento adaptativo Magentic.
+
+As implementações paralela, *handoff* e Magentic estão em
+[padroes_multiagente.py](../../application/padroes_multiagente.py) e são
+expostas por funções do [orquestrador](../../application/orquestrador.py):
+
+- `executar_paralelo_especialistas`: executa workers independentes com
+  concorrência limitada por `MAX_TRABALHOS_PARARELOS` e mantém a associação e a
+  ordem dos resultados.
+- `executar_handoff_especialistas`: valida a decisão de roteamento, restringe
+  destinos aos especialistas disponíveis, impede ciclos e limita transferências
+  (padrão: cinco).
+- `executar_magentic`: mantém um *task ledger* com dependências, estados e
+  ordem de prioridade; aceita tarefas novas a cada replanejamento e impõe
+  limites determinísticos de iterações e tarefas (padrão: vinte para cada).
+
+Os três fluxos validam respostas estruturadas; rotas, contratos, dependências e
+limites inválidos falham explicitamente. Erros de execução de workers não são
+convertidos em resultados de sucesso. O *Maker-Checker* e o fluxo sequencial
+continuam implementados separadamente.
+
+**Evidência:** a suíte completa executada de `application/` com
+`python -m pytest tests -q` passou com 44 testes; os testes focados dos padrões
+e do fluxo do orquestrador passaram com 20 testes. Os workers foram simulados
+nos testes, sem chamadas reais a provedores de LLM.
+
+**Limites do incremento:** o paralelismo de agentes continua distinto do
+paralelismo de chamadas de ferramentas no ReAct. Os limites Magentic restringem
+iterações e quantidade de tarefas, mas não criam um orçamento agregado de
+tokens para todo o fluxo; `TOKEN_BUDGET` permanece por execução de agente. A
+variante de conversa aberta em grupo também não foi implementada; a forma
+colaborativa exercitada é *Maker-Checker*.
+
+### Passo 3 — Autorização e guardrails: planejado
+
+Depois do Passo 2, adicionar autorização determinística externa (*Deny-by-Default*)
+e *Guardrails* de entrada e saída. Esse passo não está implementado pelo fluxo
+*Maker-Checker* atual.
+
+Os passos de aprendizado não representam, por si só, a implementação da
+arquitetura-alvo da SDD v5. Ingressão de webhooks, diagnóstico de falhas de
+CI/CD, geração e aplicação de patches, QA isolado, gates de promoção e
+aprovação humana para Produção permanecem entregas futuras do produto.

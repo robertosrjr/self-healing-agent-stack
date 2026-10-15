@@ -4,7 +4,14 @@ from unittest.mock import patch
 
 os.environ.setdefault("ANTHROPIC_API_KEY", "test-key")
 
-from orquestrador import executar_fluxo_padrao_json, validar_resposta_final
+from orquestrador import (
+    _planejador_magentic,
+    executar_fluxo_padrao_json,
+    executar_handoff_especialistas,
+    executar_magentic,
+    executar_paralelo_especialistas,
+    validar_resposta_final,
+)
 
 
 class TestOrquestradorFlow(unittest.TestCase):
@@ -67,6 +74,65 @@ class TestOrquestradorFlow(unittest.TestCase):
             [call.args[0] for call in mock_delegar.call_args_list],
             ["pesquisador", "redator", "revisor"],
         )
+
+    @patch("orquestrador.config.MAX_TRABALHOS_PARARELOS", 1)
+    @patch("orquestrador.delegar", side_effect=lambda nome, _: f"resultado-{nome}")
+    def test_executar_especialistas_em_paralelo(self, _mock_delegar):
+        result = executar_paralelo_especialistas(
+            "tarefa independente",
+            ["pesquisador", "redator"],
+        )
+
+        self.assertEqual(
+            result,
+            [
+                {"agent": "pesquisador", "result": "resultado-pesquisador"},
+                {"agent": "redator", "result": "resultado-redator"},
+            ],
+        )
+
+    def test_paralelo_rejeita_especialista_desconhecido_ou_duplicado(self):
+        with self.assertRaisesRegex(ValueError, "unknown_agent"):
+            executar_paralelo_especialistas("tarefa", ["inexistente"])
+        with self.assertRaisesRegex(ValueError, "duplicate_agent"):
+            executar_paralelo_especialistas("tarefa", ["pesquisador", "pesquisador"])
+
+    @patch(
+        "orquestrador.delegar",
+        side_effect=[
+            '{"next_agent":"revisor","response":"analysis ready"}',
+            '{"next_agent":null,"response":"reviewed result"}',
+        ],
+    )
+    def test_executar_handoff_entre_especialistas(self, mock_delegar):
+        result = executar_handoff_especialistas("tarefa", "pesquisador")
+
+        self.assertEqual(result["result"], "reviewed result")
+        self.assertEqual(
+            [call.args[0] for call in mock_delegar.call_args_list],
+            ["pesquisador", "revisor"],
+        )
+
+    @patch.object(
+        _planejador_magentic,
+        "executar",
+        side_effect=[
+            '{"new_tasks":[{"task_id":"t1","agent":"pesquisador",'
+            '"description":"find facts","depends_on":[]}],'
+            '"task_order":["t1"],"done":false}',
+            '{"new_tasks":[],"task_order":[],"done":true}',
+        ],
+    )
+    @patch(
+        "orquestrador.delegar",
+        return_value="facts found",
+    )
+    def test_executar_magentic_com_workers_configurados(self, mock_delegar, _mock_planner):
+        result = executar_magentic("research task")
+
+        self.assertEqual(result["status"], "COMPLETED")
+        self.assertEqual(result["tasks"][0]["result"], "facts found")
+        mock_delegar.assert_called_once()
 
 
 if __name__ == "__main__":

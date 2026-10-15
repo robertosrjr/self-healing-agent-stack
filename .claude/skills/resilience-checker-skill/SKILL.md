@@ -1,31 +1,55 @@
 ---
 name: resilience-checker-skill
-description: "Use when reviewing or implementing resilience in Java/Spring, including idempotency, retries, timeouts, circuit breakers, rate limiting, bulkheads, fallbacks, caching, or failure handling."
+description: "Use when reviewing or implementing resilience in Python applications, including provider timeouts, retries, idempotency, concurrency limits, rate limiting, caching, and explicit failure handling."
 ---
 
-# Resilience Checker
+# Resiliência em Aplicações Python
 
-## Scope
-
-Use this skill to identify failure boundaries and apply only the resilience patterns justified by real dependencies and workload.
+Avalie resiliência conforme dependências e carga reais. O protótipo atual tem
+chamadas síncronas a provedores LLM e ferramentas locais; ele não é um serviço
+distribuído nem tem fila, banco ou cache implantados.
 
 ## Workflow
 
-1. Map external services, databases, queues, shared resources, and process-local state.
-2. Classify failures as transient, permanent, overload, timeout, or duplicate execution.
-3. Apply retry only to safe idempotent operations, with explicit exception lists, exponential backoff, and jitter.
-4. Use circuit breakers, timeouts, bulkheads, and rate limits at the dependency boundary they protect.
-5. Define fallback semantics and observability before implementation.
-6. Add focused failure, concurrency, replay, and load tests.
+1. Mapeie chamadas de rede, persistência, filas, subprocessos e estado
+   compartilhado; diferencie dependências atuais de arquitetura-alvo.
+2. Classifique falhas como permanentes, transitórias, timeout, sobrecarga,
+   resposta inválida ou execução duplicada.
+3. Configure timeouts explícitos no cliente/SDK suportado e teste o limite.
+4. Só adicione retry quando operação for segura/idempotente, exceções
+   transitórias forem identificáveis e backoff com jitter e limite de tentativas
+   estiver definido.
+5. Defina comportamento de falha antes de qualquer fallback. Falha de provedor
+   ou contrato inválido deve continuar explícita e nunca virar aprovação.
+6. Adicione circuit breaker, bulkhead ou rate limiting apenas em fronteiras
+   independentes que justifiquem esses mecanismos.
+7. Teste timeout, erro, concorrência, repetição e condições de recuperação com
+   dependências simuladas; não faça testes de caos sem ambiente e stop
+   conditions aprovados.
 
-## Rules
+## Opções Python
 
-- Never add blind retry to financial writes.
-- Do not add Circuit Breaker without a dependency that can fail independently.
-- Bound local state and queues.
-- Document whether protection is process-local or distributed.
-- Coordinate metrics/logs with the observability skills and privacy with `lgpd-sre-compliance-skill`.
+- Use timeout/configuração oferecidos pelo SDK cliente existente quando
+  confirmados para a versão instalada.
+- Para HTTP direto, escolha cliente e timeout dentro da decisão arquitetural;
+  não introduza `httpx`, `tenacity` ou biblioteca de circuit breaker sem
+  atualizar manifesto e justificar o uso.
+- Semáforos/limites de concorrência só ajudam se o processamento for realmente
+  concorrente e o escopo do limite estiver definido (processo ou distribuição).
+- Cache exige política de chave, validade, invalidação e privacidade dos dados.
 
-## Reference
+## Regras
 
-See `references/resilience-checker-skill.md` for pattern details and chaos-validation guidance.
+- Não adicionar retry cego a chamadas de custo variável, mutações ou operações
+  não idempotentes.
+- Não repetir respostas inválidas do LLM automaticamente para "corrigi-las"
+  sem política explícita e orçamento.
+- Não usar circuit breaker sem dependência isolável e sinais suficientes.
+- Limitar filas, concorrência e tentativas.
+- Propagar erros com contexto sem expor segredos, prompts ou payloads pessoais.
+- Registrar claramente se controles são locais ao processo ou distribuídos.
+
+## Referência
+
+Consulte [resilience-checker-skill.md](references/resilience-checker-skill.md)
+para padrões e testes de falha em Python.

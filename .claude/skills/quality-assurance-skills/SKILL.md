@@ -1,6 +1,6 @@
 ---
 name: quality-assurance-skills
-description: "Use for QA-level strategy and automation: mapping coverage onto the Agile Testing Quadrants, UI/E2E scripts (Cypress, Selenium, Appium), API contract tests (Postman/Insomnia), SQL data-validation queries, or CI/CD test gating. For developer-level TDD, unit/integration tests and ArchUnit, use testing-strategy-guidance."
+description: "Use for QA-level strategy and automation: Agile Testing Quadrants, UI/E2E, API contracts, data validation, and CI/CD gates. For Python developer-level TDD and pytest unit/integration tests, use testing-strategy-guidance."
 ---
 
 # Quality Assurance

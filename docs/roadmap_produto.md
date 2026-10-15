@@ -23,16 +23,18 @@ autorizações, gates de qualidade e promoções de ambiente.
 - **Implementação do produto-alvo:** ainda não iniciada. O protótipo não recebe
   eventos de CI/CD, não diagnostica repositórios, não gera/aplica patches e
   não executa gates ou promoções corporativas.
-- **Próximo incremento de aprendizado:** um fluxo Maker-Checker com contratos
-  de entrada e saída validados por esquema; autorização e guardrails vêm
-  depois, antes de aplicar o fluxo a revisões de código.
+- **Incremento de aprendizado mais recente:** o Passo 2 de padrões multiagente
+  está concluído no protótipo, incluindo paralelo entre agentes, *handoff* e
+  planejamento Magentic. O próximo marco do roadmap do produto continua sendo
+  R2 — autorização determinística e guardrails; esse marco não se confunde com
+  o Passo 2 do estudo.
 
 ## Marcos
 
 | Marco | Escopo e resultado esperado | Critérios de conclusão | Situação |
 |---|---|---|---|
 | **R0 — Runtime ReAct** | Consolidar o ciclo modelo-ferramenta-observação, limites de execução, tratamento explícito de falhas e registro de métricas. | Comportamentos principais exercitados por testes automatizados e registrados no plano do Passo 1. | **Concluído** como protótipo didático |
-| **R1 — Maker-Checker e contratos** | Criar um fluxo sequencial em que um agente produz um resultado e outro o revisa, com validação de esquema nas entradas e saídas. | Saídas válidas prosseguem; conteúdo inválido ou fora do contrato interrompe o fluxo explicitamente; testes cobrem ambos os caminhos. | **Próximo** |
+| **R1 — Maker-Checker e contratos** | Criar um fluxo sequencial em que um agente produz um resultado e outro o revisa, com validação de esquema nas entradas e saídas. | Saídas válidas prosseguem; conteúdo inválido ou fora do contrato interrompe o fluxo explicitamente; testes cobrem ambos os caminhos. | **Concluído** como incremento local; 29 testes passaram |
 | **R2 — Autorização e guardrails** | Adicionar controles determinísticos externos ao LLM, com política *deny-by-default* e verificações de entrada e saída para conteúdo malicioso, segredos e dados pessoais. | Ações não autorizadas são bloqueadas; casos de guardrail têm testes; falhas não são tratadas como aprovação. | **Planejado** |
 | **R3 — Ingressão e diagnóstico** | Definir e validar o evento de falha; relacionar logs e contexto do repositório; produzir diagnóstico estruturado com causa provável, evidências e severidade. | Payload inválido é rejeitado; diagnóstico tem contrato verificável e evidências rastreáveis; nenhuma alteração de código é executada nesta etapa. | **Planejado** |
 | **R4 — Proposta de correção e QA isolado** | Produzir uma proposta de patch limitada à causa identificada e executar testes de regressão em ambiente isolado. | A proposta tem escopo e justificativa; testes existentes e novos passam antes de qualquer avanço; falhas interrompem a promoção. | **Planejado** |

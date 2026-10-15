@@ -1,100 +1,104 @@
 ---
 name: architecture-guidance
-description: "Use this skill when designing system architecture, structuring packages, defining ports/adapters, implementing Domain-Driven Design (DDD), or reviewing architectural decisions."
+description: "Use when designing Python package boundaries, ports and adapters, DDD models, or reviewing dependency direction and architecture."
 ---
 
-# Arquitetura: Hexagonal & DDD
+# Arquitetura Python: Hexagonal e DDD
 
-Você é um especialista em **Arquitetura Hexagonal (Ports & Adapters)** e **Domain-Driven Design (DDD)**. Sua missão é orientar desenvolvedores na estruturação de código, garantindo que dependências sigam a regra clara: **domain → application → infrastructure**.
+Use esta skill para desenhar ou revisar limites entre domínio, casos de uso e
+integrações em aplicações Python. A estrutura proposta é uma opção para
+evoluções que precisem dela, não uma exigência de reorganizar o protótipo atual.
 
-## Quando Usar Esta Skill
+## Regra de dependência
 
-- Estruturar pacotes em novos projetos
-- Revisar organização de camadas
-- Definir ports (interfaces) para casos de uso
-- Modelar agregados, value objects, entidades e domain services
-- Validar se a arquitetura hexagonal está sendo respeitada
-- Implementar padrões DDD (Aggregate Root, Domain Events, Bounded Context)
-
-## Diretrizes Principais
-
-### 1. Regra de Dependência (Inviolável)
-
-```
-infrastructure  →  application  →  domain
+```text
+adapters/infrastructure -> application -> domain
 ```
 
-- `domain` nunca importa frameworks, Spring, JPA, HTTP
-- `application` depende apenas de `domain`
-- `infrastructure` implementa as portas e pode usar qualquer biblioteca
+- Domínio contém regras e tipos de negócio puros; não importa SDKs, web
+  frameworks, Pydantic, armazenamento ou clientes externos.
+- Aplicação coordena casos de uso e depende do domínio e de contratos/ports.
+- Adaptadores implementam integração com modelos, HTTP, persistência, filas e
+  filesystem; ficam na borda do sistema.
+- Dependências de runtime são montadas no ponto de composição, não escondidas
+  em imports globais.
 
-### 2. Estrutura de Pacotes
+## Estrutura Python possível
 
-```
-src/main/java/com/empresa/projeto
- ├── domain
- │    ├── model            → Entidades, Value Objects, Agregados
- │    ├── service          → Domain Services (regras de negócio puras)
- │    ├── event            → Domain Events
- │    └── exception        → Exceções de domínio
- │
- ├── application
- │    ├── port
- │    │    ├── in          → Interfaces dos casos de uso
- │    │    └── out         → Interfaces de persistência/integração
- │    └── usecase          → Implementação dos casos de uso
- │
- └── infrastructure
-      ├── adapter
-      │    ├── in
-      │    │    ├── web    → Controllers REST, DTOs
-      │    │    └── messaging → Listeners/Consumers
-      │    └── out
-      │         ├── persistence → JPA, Repositories, Mappers
-      │         ├── client → HTTP/gRPC clients
-      │         └── event  → Publicação de eventos (Kafka, SQS, etc.)
-      └── config → Beans, segurança, OpenAPI
+Para uma aplicação que cresça além do protótipo em módulos planos:
+
+```text
+application/
+  domain/
+    models.py
+    exceptions.py
+    services.py
+  use_cases/
+    maker_checker.py
+    ports.py
+  adapters/
+    llm/
+    http/
+    persistence/
+  config.py
+tests/
 ```
 
-### 3. Regras Práticas
+Não criar camadas vazias apenas para reproduzir um diagrama. A estrutura atual
+usa módulos Python diretamente em `application/`; mudanças arquiteturais devem
+ser incrementais e motivadas por dependências ou responsabilidades concretas.
 
-- Toda porta de entrada (`in`) é uma interface implementada por um **UseCase**.
-- Toda porta de saída (`out`) é uma interface implementada por um **Adapter** em `infrastructure`.
-- Controllers **nunca** chamam repositórios diretamente; sempre passam por um caso de uso.
-- Entidades JPA (`@Entity`) são **diferentes** das entidades de domínio; converta com `Mapper`/`Assembler`.
-- Repositories são definidos como porta em `application/port/out`, um por agregado.
+## Ports e adapters em Python
 
-### 4. Padrões DDD Essenciais
+Use `typing.Protocol` quando uma abstração estrutural for útil para trocar
+implementações ou testar um caso de uso. Funções injetadas também são
+suficientes para dependências simples, como os workers de `MakerCheckerService`.
+Não introduza interfaces nominais para cada função por padrão.
 
-| Padrão | O quê | Quando usar |
-|--------|-------|------------|
-| **Entity** | Identidade única + ciclo de vida | Usuários, pedidos, contas |
-| **Value Object** | Imutável, sem identidade, comparado por valor | Dinheiro, endereço, email |
-| **Aggregate** | Cluster de entidades/VOs com Aggregate Root | Um pedido com múltiplos itens |
-| **Repository** | Interface para persistência de agregados | Uma por agregado |
-| **Domain Service** | Regra de negócio que não pertence a uma entidade | Cálculo complexo, orquestração |
-| **Domain Event** | Comunicação entre agregados sem acoplamento | "PedidoCriado", "PagamentoRecebido" |
-| **Bounded Context** | Modelo isolado com linguagem ubíqua | Catálogo vs. Carrinho vs. Pagamento |
+```python
+from typing import Protocol
 
-Value Objects são imutáveis e se validam na construção; em Java 21, implemente como `record`:
 
-```java
-public record Money(BigDecimal amount, Currency currency) {
-    public Money {
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Amount cannot be negative");
-        }
-    }
-}
+class MakerWorker(Protocol):
+    def executar(self, tarefa: str) -> str: ...
+
+
+class ExecutarMakerChecker:
+    def __init__(self, maker: MakerWorker) -> None:
+        self._maker = maker
 ```
 
-### 5. Validação Arquitetural
+Contratos externos podem usar Pydantic na borda; não faça o domínio depender de
+modelos Pydantic quando tipos imutáveis ou dataclasses forem suficientes.
 
-Automatize a regra de dependência com **ArchUnit**. As regras e o exemplo de `ArchitectureTest` ficam na `testing-strategy-guidance` (seção "Validação Arquitetural com ArchUnit").
+## DDD com parcimônia
 
-## Como Responder
+| Conceito | Aplicação em Python | Quando usar |
+|---|---|---|
+| Entity | Classe/dataclass com identidade explícita | Ciclo de vida e identidade importam |
+| Value Object | `dataclass(frozen=True, slots=True)` ou tipo imutável | Validar e comparar por valor |
+| Aggregate | Entidade raiz que protege invariantes | Há invariantes transacionais relacionadas |
+| Repository port | `Protocol` na aplicação; adapter na borda | Persistência real é necessária |
+| Domain service | Função/classe sem dependência de infraestrutura | Regra não pertence a uma entidade |
+| Domain event | Dataclass/evento imutável | Consumidores precisam reagir sem acoplamento |
+| Bounded context | Pacotes/modelos separados | Linguagem e regras divergem entre contextos |
 
-1. **Análise**: Avaliar a estrutura proposta ou existente
-2. **Recomendação**: Sugerir ajustes conforme hexagonal + DDD
-3. **Implementação**: Fornecer código estruturado e pronto para usar
-4. **Validação**: Sugerir testes de arquitetura (ArchUnit)
+Não adote entidades, agregados ou event sourcing apenas por estarem no
+vocabulário DDD. O R1 atual coordena validação Maker-Checker local e ainda não
+tem persistência ou bounded contexts implantados.
+
+## Validação arquitetural
+
+- Escreva testes de importação/arquitetura para as regras que forem importantes.
+- `import-linter` é uma opção se o projeto vier a adotar uma ferramenta
+  específica; declarar a dependência e configurar contratos somente quando
+  houver módulos/camadas reais para proteger.
+- Mantenha testes unitários puros para domínio e testes de casos de uso com
+  ports ou workers falsos.
+
+## Como responder
+
+1. Descreva as dependências reais e o estado atual antes de propor camadas.
+2. Identifique violações concretas da direção de dependência.
+3. Recomende a menor mudança que melhora isolamento e testabilidade.
+4. Não atribua ao protótipo capacidades-alvo ainda não implementadas.

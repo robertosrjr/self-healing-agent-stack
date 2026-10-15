@@ -1,280 +1,87 @@
 ---
 name: testing-strategy-guidance
-description: "Use this skill for developer-level Java tests: TDD, unit and integration tests (JUnit, AssertJ, Mockito, Testcontainers), ArchUnit architecture rules, test naming and coverage targets. For QA strategy across Agile Testing Quadrants, UI/E2E automation, Postman or SQL validation, use quality-assurance-skills."
+description: "Use for Python developer-level tests, pytest, TDD, unit and integration testing, and enforceable architecture rules. For product QA strategy and CI/CD gates, use quality-assurance-skills."
 ---
 
-# Testes & TDD: Estratégia e Convenções
+# Testes Python: TDD e Estratégia
 
-Você é um especialista em **Test-Driven Development (TDD)**, **estratégia de testes**, **pirâmide de testes** e **tools modernas** (Testcontainers, AssertJ, ArchUnit). Sua missão é orientar a implementação de testes de qualidade.
+Use esta skill para testes de código Python e para propor uma estratégia
+proporcional à arquitetura existente. O projeto executa a suíte em `application/`
+com `python -m pytest tests -q`; os testes atuais usam `unittest.TestCase` e
+`unittest.mock` e são executados pelo pytest.
 
-## Quando Usar Esta Skill
+## Ciclo TDD
 
-- Implementar novos testes com TDD
-- Revisar qualidade e cobertura de testes
-- Definir estratégia de testes para features
-- Migrar de mocks para Testcontainers
-- Validar regras arquiteturais automaticamente
-- Refatorar testes existentes
-- Onboarding em convenções de teste
+1. **RED:** escreva um teste que demonstre o comportamento ausente.
+2. **GREEN:** implemente a menor mudança que o faça passar.
+3. **REFACTOR:** simplifique mantendo os testes verdes.
 
-## Ciclo TDD: Red → Green → Refactor
+Não escreva testes dependentes de um provedor LLM real para validar lógica de
+contrato ou orquestração.
 
-```
-1. RED:     Escrever teste que falha
-2. GREEN:   Implementar o mínimo para passar
-3. REFATOR: Limpar código mantendo testes verdes
-```
+## Pirâmide adequada ao sistema
 
-### Exemplo TDD
+- **Unitários:** maioria; validações Pydantic, regras de domínio e sequência de
+  casos de uso com dependências injetadas.
+- **Integração:** quando houver adapters reais, como banco, HTTP ou broker;
+  teste os limites concretos sem substituir toda a camada sob teste.
+- **End-to-end:** poucos cenários críticos somente quando existir uma jornada
+  integrada de aplicação.
 
-**RED** (teste falha):
-```java
-@Test
-void should_create_order_with_positive_amount() {
-    // ainda não existe CreateOrderUseCase
-    Order order = new CreateOrderUseCase().execute(
-        new CreateOrderCommand(BigDecimal.valueOf(100), "BRL")
-    );
-    
-    assertThat(order.getAmount()).isEqualTo(BigDecimal.valueOf(100));
-}
-```
+O protótipo local não exige containers de teste, serviços externos, testes HTTP
+ou E2E. Não adicione infraestrutura de teste sem uma integração real a validar.
 
-**GREEN** (mínimo para passar):
-```java
-public class CreateOrderUseCase {
-    public Order execute(CreateOrderCommand cmd) {
-        return new Order(cmd.amount(), cmd.currency());
-    }
-}
-```
+## Estilo pytest
 
-**REFACTOR** (melhorar sem quebrar):
-```java
-public class CreateOrderUseCase {
-    private final OrderRepository repository;
-    
-    public Order execute(CreateOrderCommand cmd) {
-        Order order = Order.create(cmd.amount(), cmd.currency());
-        return repository.save(order);
-    }
-}
+Use nomes que expressem condição e resultado, organização Arrange-Act-Assert,
+fixtures compartilhadas com parcimônia, e `pytest.mark.parametrize` para casos
+de dados relacionados:
+
+```python
+import pytest
+
+
+@pytest.mark.parametrize(
+    ("decision", "expected_status"),
+    [("APPROVED", "APPROVED"), ("REJECTED", "REJECTED")],
+)
+def test_checker_decision_sets_response_status(decision, expected_status):
+    result = build_response(decision)
+
+    assert result["status"] == expected_status
 ```
 
-## Pirâmide de Testes
+Para falhas, use `pytest.raises`; para patching use `monkeypatch` ou
+`unittest.mock.patch`. Injete fakes/stubs na fronteira do serviço e não faça
+mock do objeto que está sendo testado.
 
-```
-        ╱╲
-       ╱  ╲ E2E
-      ╱────╲     → poucos (cenários críticos ponta-a-ponta)
-     ╱      ╲
-    ╱ Integr╲   → médio volume (valida adapters: DB, HTTP, Kafka)
-   ╱─────────╲
-  ╱           ╲
- ╱  Unitários  ╲ → maioria (rápidos, isolados, domínio + casos de uso)
-╱─────────────╲
-```
+## Casos relevantes para fluxos de agentes
 
-### Proporções Recomendadas
-- **70%** testes unitários (domínio + casos de uso)
-- **25%** testes de integração (adapters)
-- **5%** testes E2E (jornadas críticas)
+- Contratos: campos ausentes/extras, tipo inválido, enum inválido, JSON inválido,
+  limites e erro sem ecoar valores rejeitados.
+- Orquestração: chamadas na ordem esperada; não chamar o próximo worker após
+  falha; decisões válidas permanecem distintas de erros.
+- Falhas: exceções externas propagam explicitamente, sem sucesso alternativo.
+- Segurança do fluxo: agentes com privilégios/ferramentas diferentes não devem
+  ter caminhos alternativos que contornem validações.
+- Testes não fazem chamadas de rede nem exigem chaves reais.
 
-## Convenções de Teste
+## Integração e ferramentas opcionais
 
-### Nomenclatura
+- `pytest` é o runner já usado no repositório.
+- `unittest.mock` faz parte da biblioteca padrão; prefira monkeypatch/fakes
+  simples quando forem suficientes.
+- `pytest-cov`, `hypothesis`, `httpx` ou ferramentas de containers só devem ser
+  adicionados quando um objetivo de cobertura, propriedade ou integração
+  justificar a dependência.
+- Ferramentas de regras de importação podem proteger camadas se o projeto
+  evoluir para uma arquitetura de pacotes explícita.
 
-**Padrão 1: `should_<resultado>_when_<condição>`**
-```java
-@Test
-void should_reject_negative_amount_when_creating_order() { }
+Comando documentado a partir de `application/`:
 
-@Test
-void should_calculate_discount_when_customer_is_premium() { }
-```
-
-**Padrão 2: Given-When-Then**
-```java
-@Test
-void givenPremiumCustomer_whenApplyingDiscount_thenCalculate20Percent() { }
+```powershell
+python -m pytest tests -q
 ```
 
-### Estrutura AAA (Arrange-Act-Assert)
-```java
-@Test
-void should_create_order_successfully() {
-    // ARRANGE (setup)
-    CreateOrderCommand command = new CreateOrderCommand(
-        BigDecimal.valueOf(100),
-        "BRL"
-    );
-    
-    // ACT (executar)
-    Order order = usecase.execute(command);
-    
-    // ASSERT (validar)
-    assertThat(order.getAmount())
-        .isEqualTo(BigDecimal.valueOf(100));
-}
-```
-
-## Testes de Domínio (Unitários Puros)
-
-**Nunca use `@SpringBootTest` em domínio** — testes devem ser rápidos, isolados:
-
-```java
-// ✅ CERTO: teste puro, sem Spring
-class MoneyTest {
-    
-    @Test
-    void should_reject_negative_amount() {
-        assertThatThrownBy(() -> new Money(
-            new BigDecimal("-10"),
-            Currency.getInstance("BRL")
-        ))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Amount cannot be negative");
-    }
-    
-    @Test
-    void should_add_money_correctly() {
-        Money m1 = new Money(BigDecimal.valueOf(100), Currency.getInstance("BRL"));
-        Money m2 = new Money(BigDecimal.valueOf(50), Currency.getInstance("BRL"));
-        
-        Money result = m1.add(m2);
-        
-        assertThat(result.getAmount())
-            .isEqualByComparingTo(BigDecimal.valueOf(150));
-    }
-}
-```
-
-## Testes de Integração (Testcontainers)
-
-**Nunca use H2 simulando outro banco** — use Testcontainers com banco real:
-
-```java
-@SpringBootTest
-@Testcontainers
-class OrderRepositoryIntegrationTest {
-    
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
-        .withDatabaseName("testdb")
-        .withUsername("test")
-        .withPassword("test");
-    
-    @DynamicPropertySource
-    static void configureDataSource(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
-    
-    @Autowired
-    private OrderRepository repository;
-    
-    @Test
-    void should_save_and_retrieve_order() {
-        Order order = Order.create(BigDecimal.valueOf(100), "BRL");
-        
-        Order saved = repository.save(order);
-        Order retrieved = repository.findById(saved.getId()).orElseThrow();
-        
-        assertThat(retrieved).isEqualTo(saved);
-    }
-}
-```
-
-## Mocks vs. Testes Reais
-
-| Quando? | O quê | Como |
-|---------|-------|------|
-| **Domínio** | Nunca mockar | Testes puros, sem dependências |
-| **Casos de Uso** | Mockar ports (`out`), não domínio | `@Mock` repositories, clientes |
-| **Adapters** | Usar Testcontainers | Banco real, fila real |
-| **Externos** | Mockar integrações HTTP | `@MockBean` com `MockRestServiceServer` |
-
-Nunca mocke o próprio objeto sob teste.
-
-```java
-// ✅ CERTO: mockar apenas ports
-@Test
-void should_create_order_and_send_email() {
-    // ARRANGE
-    EmailNotificationPort emailPort = mock(EmailNotificationPort.class);
-    CreateOrderUseCase usecase = new CreateOrderUseCase(
-        orderRepository,
-        emailPort
-    );
-    
-    // ACT
-    Order order = usecase.execute(command);
-    
-    // ASSERT
-    verify(emailPort).sendOrderConfirmation(order);
-}
-```
-
-## Asserções com AssertJ
-
-```java
-// ✅ Fluent, legível, descriptivo
-assertThat(order.getAmount())
-    .isNotNull()
-    .isGreaterThan(BigDecimal.ZERO)
-    .isEqualByComparingTo(BigDecimal.valueOf(100));
-
-assertThat(order.getStatus())
-    .isIn(OrderStatus.PENDING, OrderStatus.CONFIRMED);
-
-assertThat(orders)
-    .hasSize(3)
-    .extracting("status")
-    .containsExactly(PENDING, CONFIRMED, SHIPPED);
-```
-
-## Validação Arquitetural com ArchUnit
-
-```java
-@AnalyzeClasses(packages = "com.empresa.projeto")
-public class ArchitectureTest {
-    
-    @ArchTest
-    static final ArchRule domain_should_not_depend_on_infrastructure =
-        noClasses().that().resideInAPackage("..domain..")
-            .should().dependOnClassesThat().resideInAPackage("..infrastructure..");
-    
-    @ArchTest
-    static final ArchRule repositories_must_implement_port =
-        classes().that().resideInAPackage("..infrastructure.adapter.out..")
-            .and().haveNameMatching(".*Repository")
-            .should().implement(Repository.class);
-    
-    @ArchTest
-    static final ArchRule use_cases_must_be_in_application_package =
-        classes().that().haveNameMatching(".*UseCase")
-            .should().resideInAPackage("..application..");
-}
-```
-
-## Cobertura Recomendada
-
-| Camada | Cobertura Mínima | Prioridade |
-|--------|-----------------|-----------|
-| Domain | **80%+** | Máxima (regras de negócio) |
-| Application (UseCases) | **80%+** | Máxima (orquestração) |
-| Infrastructure | **50%+** | Média (adapters podem ter menos) |
-| Controllers/REST | **70%+** | Média |
-
-Use badges no README:
-```markdown
-[![Coverage](https://codecov.io/gh/org/repo/branch/master/graph/badge.svg)](...)
-```
-
-## Como Responder
-
-1. **Análise**: Revisar testes existentes ou estratégia
-2. **Recomendação**: Quais testes faltam? Refatorar mocks?
-3. **Implementação**: Código de teste seguindo TDD + convenções
-4. **Educação**: Por que essa estratégia funciona?
+Não invente meta de cobertura universal. Defina metas por risco e comportamento
+crítico quando a equipe também passar a medir cobertura.

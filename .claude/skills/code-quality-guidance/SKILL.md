@@ -1,100 +1,63 @@
 ---
 name: code-quality-guidance
-description: "Use this skill when reviewing code for SOLID principles, Clean Code practices, design patterns, or when refactoring for quality and maintainability."
+description: "Use when reviewing or refactoring Python for SOLID, maintainability, typing, error handling, naming, and testability."
 ---
 
-# Qualidade de Código: SOLID, Clean Code & Design Patterns
+# Qualidade de Código Python
 
-Você é um especialista em **qualidade de código**, **princípios SOLID**, **Clean Code** e **Design Patterns**. Sua missão é orientar desenvolvedores a escrever código limpo, legível e mantível.
+Ajude a manter o código Python legível, tipado quando isso melhorar a
+compreensão, testável e coerente com os padrões já usados no repositório.
 
-## Quando Usar Esta Skill
+## SOLID na prática Python
 
-- Revisar código para conformidade com SOLID
-- Detectar violações de Clean Code
-- Sugerir padrões de projeto adequados
-- Refatorar código duplicado ou complexo
-- Mentoria em boas práticas
-- Code review orientado por princípios
+| Princípio | Aplicação |
+|---|---|
+| Single Responsibility | Funções e classes com motivos claros para mudar. |
+| Open/Closed | Composição, funções/strategies ou Protocols quando novos comportamentos reais surgirem. |
+| Liskov Substitution | Implementações de Protocols preservam semântica e contratos, não apenas assinaturas. |
+| Interface Segregation | Protocols pequenos e específicos; não criar interfaces sem consumidor alternativo. |
+| Dependency Inversion | Casos de uso recebem dependências necessárias por construtor/parâmetro e não criam SDKs globalmente. |
 
-## Princípios SOLID
+## Convenções Python
 
-| Princípio | Descrição | Antipadrão |
-|-----------|-----------|-----------|
-| **S** — Single Responsibility | Uma classe, um motivo para mudar | Classe com 500 linhas fazendo 5 coisas |
-| **O** — Open/Closed | Aberta para extensão, fechada para modificação | `if/else` em cascata para novos tipos |
-| **L** — Liskov Substitution | Subtipos substituem tipos base sem quebra | Subclasse que viola contrato da superclasse |
-| **I** — Interface Segregation | Muitas interfaces específicas vs. uma gorda | `interface Tudo { criar(), ler(), atualizar(), deletar() }` |
-| **D** — Dependency Inversion | Depender de abstrações, não implementações | Classes concretas acopladas diretamente |
+- Use `snake_case` para funções e variáveis, `PascalCase` para classes e nomes
+  que expressem intenção.
+- Use type hints onde aumentem clareza e facilitem verificação; não use casts
+  para esconder tipos incorretos.
+- Prefira funções pequenas com uma responsabilidade; limites como 15–20 linhas
+  são heurísticos, não regras automáticas.
+- Use `None` apenas quando representa ausência e modele-a com `T | None`;
+  prefira exceções ou coleções vazias quando semanticamente adequadas.
+- Use `dataclass` para objetos de domínio simples; Pydantic para validação de
+  fronteiras conforme os contratos já escolhidos no R1.
+- Evite estado global mutável e inicialização de clientes externos no import
+  de módulos quando isso comprometer testes ou composição.
+- Não capture exceções amplamente para continuar com resposta aparentemente
+  válida. Capture apenas para acrescentar contexto ou traduzir a fronteira e
+  preserve a causa com `raise ... from exc`.
 
-## Clean Code Essencial
+## Padrões sem abstração prematura
 
-### Nomes Descritivos
-✅ `calcularJurosMensais(BigDecimal principal)`  
-❌ `calc(BigDecimal p)`
+| Padrão | Opção idiomática | Use quando |
+|---|---|---|
+| Strategy | Callable/Protocol | Implementações realmente intercambiáveis |
+| Adapter | Função/classe adaptadora | Isolar SDK ou protocolo externo |
+| Factory | Função de composição | Construção depende de configuração |
+| Decorator | Decorator Python | Comportamento transversal reutilizável |
+| Chain of Responsibility | Etapas explicitamente compostas | Pipeline com fases independentes |
 
-### Métodos Pequenos
-- Idealmente **até 15-20 linhas**
-- Uma responsabilidade clara
-- Nome que descreve exatamente o que faz
+Prefira injeção simples de funções se abstrações formais não trouxerem
+benefício demonstrável. Não use padrões sem necessidade concreta.
 
-### Nunca Retornar `null`
-✅ `Optional<Usuario>`, `Collections.emptyList()`, exceções  
-❌ `return null;`
+## Qualidade automatizada
 
-### Injeção de Dependência pelo Construtor
-✅ Campos `private final` recebidos pelo construtor (testável, imutável, dependências explícitas)  
-❌ `@Autowired` em atributo (field injection): esconde dependências e dificulta testes sem Spring
+Mantenha os comandos e ferramentas existentes. Ruff pode cobrir lint/format e
+mypy ou Pyright podem verificar tipos, mas não introduza essas ferramentas sem
+decisão de projeto e configuração explícitas. A suíte atual usa pytest:
 
-### Tratamento de Erros
-- Use exceções de negócio customizadas (`DomainException`) para regras violadas
-- Nunca engula exceções silenciosamente (`catch` vazio ou só com log)
-
-### Evitar Comentários Repetitivos
-❌ `// incrementar contador` → `contador++`  
-✅ Código autoexplicativo
-
-### DRY (Don't Repeat Yourself)
-- Extrair duplicação em métodos privados
-- Mas: não criar abstrações prematuras (YAGNI)
-- "Boy Scout Rule": deixar o código um pouco melhor
-
-## Design Patterns (Usar quando resolvem problemas reais)
-
-| Padrão | Problema que resolve | Exemplo |
-|--------|---------------------|---------|
-| **Builder** | Objetos com muitos parâmetros opcionais | Filtros complexos, queries |
-| **Factory** | Criação que varia conforme contexto | Diferentes tipos de pagamento |
-| **Strategy** | Comportamentos intercambiáveis | Cálculos de frete, regras de desconto |
-| **Adapter** | Integração com bibliotecas externas | Conectar APIs diferentes |
-| **Decorator** | Adicionar comportamento sem alterar classe | Cache, logging, retry |
-| **Observer** | Notificação em cadeia | Domain Events, listeners |
-| **Specification** | Composição de regras de negócio | Queries complexas, filtros DDD |
-| **Template Method** | Algoritmos com passos fixos/variáveis | Processamento em lotes |
-| **Chain of Responsibility** | Processamento sequencial com etapas independentes | Pipelines de validação |
-
-## Formatação Consistente
-
-Use ferramentas de build:
-- **Spotless** (Maven/Gradle)
-- **google-java-format** (Google's formatter)
-- **Checkstyle** (regras automáticas)
-
-```xml
-<plugin>
-    <groupId>com.diffplug.spotless</groupId>
-    <artifactId>spotless-maven-plugin</artifactId>
-    <version>2.x.x</version>
-    <executions>
-        <execution>
-            <goals><goal>check</goal></goals>
-        </execution>
-    </executions>
-</plugin>
+```powershell
+python -m pytest tests -q
 ```
 
-## Como Responder
-
-1. **Análise**: Identificar violações de princípios
-2. **Explicação**: Por que é um problema (SOLID, Clean Code)
-3. **Refatoração**: Código melhorado com comentários
-4. **Educação**: Ensinar o princípio por trás
+Ao revisar, explique problemas concretos, proponha alterações focadas e rode a
+verificação mais curta que cubra o comportamento modificado.

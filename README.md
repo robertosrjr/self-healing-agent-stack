@@ -113,9 +113,19 @@ O protótipo demonstra:
 - agentes especialistas e delegação pelo orquestrador;
 - provedores Anthropic e OpenRouter, além de roteamento com Jev/TypeSafe;
 - ferramentas locais de exemplo para busca, cálculo e contagem de palavras;
+- fluxo local Maker-Checker implementado como incremento R1, com contratos
+  Pydantic estritos e sem ferramentas nos dois agentes;
+- padrões de orquestração multiagente para fan-out paralelo, transferência
+  *handoff* limitada e planejamento Magentic com *task ledger*;
 - limite de iterações (`MAX_PASSOS`, padrão `10`);
+- limite de concorrência das chamadas paralelas de ferramentas e agentes
+  (`MAX_TRABALHOS_PARARELOS`, padrão `8`);
 - orçamento de tokens por execução de agente (`TOKEN_BUDGET`, padrão `20000`);
 - registro de métricas e histórico das execuções.
+
+Os fluxos paralelos, *handoff* e Magentic são funções explícitas do
+orquestrador; a demonstração padrão continua executando seu pipeline próprio.
+Os testes usam workers simulados e não fazem chamadas a provedores reais.
 
 Ainda não estão implementados os componentes centrais do SDD v5: webhook de
 falha de CI/CD, Diagnostic Worker integrado ao repositório e aos logs,
@@ -143,14 +153,25 @@ quando aplicável, mas não cancela uma chamada ao modelo já em andamento.
 - [Diretrizes do estudo de orquestração](docs/sdd/diretrizes_estudo_orquestracao_agentes.md)
 - [Plano do Passo 1 — runtime ReAct](docs/plano_passo_1_runtime.md)
 
+## Skills para agentes de desenvolvimento
+
+O repositório mantém skills para orientar agentes em tarefas de arquitetura,
+Python, testes, segurança, privacidade, observabilidade e documentação. Elas
+são instruções de trabalho, não funcionalidades da aplicação. Consulte o
+[catálogo de skills](.claude/skills/README.md) para conhecer seus escopos,
+quando aplicá-las e quais dependem de capacidades futuras.
+
 ## Código da aplicação
 
 | Arquivo | Responsabilidade |
 |---|---|
 | [application/agente.py](application/agente.py) | Loop ReAct, chamadas ao modelo, execução de ferramentas e controles do runtime. |
 | [application/ferramentas.py](application/ferramentas.py) | Ferramentas locais usadas no protótipo. |
-| [application/especialistas.py](application/especialistas.py) | Agentes especialistas de pesquisa, análise, redação e revisão. |
-| [application/orquestrador.py](application/orquestrador.py) | Coordenação do fluxo de demonstração e delegação a especialistas. |
+| [application/especialistas.py](application/especialistas.py) | Agentes especialistas, incluindo Maker e Checker sem ferramentas. |
+| [application/contratos_maker_checker.py](application/contratos_maker_checker.py) | Contratos estritos e validação de entrada/saída do fluxo Maker-Checker. |
+| [application/maker_checker.py](application/maker_checker.py) | Coordenação sequencial Maker-Checker com workers injetáveis. |
+| [application/padroes_multiagente.py](application/padroes_multiagente.py) | Serviços de execução paralela, *handoff* e planejamento Magentic com validação e limites. |
+| [application/orquestrador.py](application/orquestrador.py) | Fluxo de demonstração, delegação e funções de acesso aos padrões multiagente. |
 | [application/roteamento_jev.py](application/roteamento_jev.py) | Roteamento entre análise quantitativa e explicação. |
 | [application/config.py](application/config.py) | Configuração de provedores, modelos e limites de execução. |
 | [application/main.py](application/main.py) | Entrada para executar a demonstração interativa. |
@@ -161,7 +182,7 @@ No PowerShell, a partir da raiz do repositório:
 
 ```powershell
 Set-Location application
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 Copy-Item .env.example .env
 ```
 
@@ -185,6 +206,10 @@ As ferramentas pesquisam somente uma pequena base local de demonstração. Os
 dados não são uma fonte atualizada nem substituem pesquisa ou validação de
 informações reais.
 
+Para instalar apenas as dependências de execução, use
+`pip install -r requirements.txt`. O manifesto `requirements-dev.txt` inclui
+essas dependências e o pytest usado na suíte automatizada.
+
 ## Executar os testes
 
 Na pasta `application`:
@@ -198,10 +223,14 @@ eles não validam uma integração real com CI/CD ou implantação.
 
 ## Próximo incremento e arquitetura-alvo
 
-O próximo incremento de aprendizado é o **R1 — Maker-Checker e contratos**:
-um fluxo sequencial em que um agente produz um resultado, outro o verifica e
-os dados de entrada e saída são validados por schema. O plano de implementação
-incremental está no [roadmap do produto](docs/roadmap_produto.md).
+O **Passo 2 de padrões multiagente está concluído** como incremento didático:
+além dos fluxos sequencial e Maker-Checker, há execução paralela de agentes,
+*handoff* e planejamento Magentic com limites e contratos. O próximo marco do
+roadmap do produto é **R2 — autorização determinística e guardrails**. Isso
+continua sendo separado da implementação do produto-alvo: os fluxos locais
+não aplicam patches, não autorizam ações e não implementam a infraestrutura
+operacional prevista pela SDD v5. O progresso está no
+[roadmap do produto](docs/roadmap_produto.md).
 
 A SDD v5 também descreve etapas futuras de ingestão de eventos, diagnóstico,
 propostas de correção, QA isolado, gates, promoção e governança:

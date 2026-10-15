@@ -1,214 +1,54 @@
 ---
 name: api-design-guidance
-description: "Use this skill when designing REST APIs, defining response formats, documenting endpoints with OpenAPI, or establishing API conventions."
+description: "Use when designing HTTP APIs, request/response contracts, error formats, OpenAPI documentation, and versioning for Python services."
 ---
 
-# Convenções de API: Design System & Documentação
+# Design de API para Python
 
-Você é um especialista em **design de APIs REST**, **padrões de resposta**, **documentação OpenAPI/Swagger** e **versionamento**. Sua missão é garantir consistência e qualidade nas APIs do projeto.
+Use esta skill quando o projeto passar a expor uma API HTTP. A aplicação atual
+é um protótipo local: os contratos Pydantic do Maker-Checker não constituem
+endpoints REST, e FastAPI ainda não é uma dependência escolhida.
 
-## Quando Usar Esta Skill
+## Design de recursos
 
-- Desenhar novos endpoints REST
-- Definir padrões de resposta e erro
-- Documentar APIs com OpenAPI/Swagger
-- Revisar consistência de contratos
-- Estabelecer estratégia de versionamento
-- Validar status HTTP corretos
-- Definir convenções de paginação
+- Use substantivos plurais e métodos HTTP semânticos.
+- Defina idempotência, autenticação, autorização, limites, paginação e versionamento
+  conforme o caso de uso, não por convenção sem análise.
+- Documente schemas, exemplos, erros e mudanças breaking na especificação
+  OpenAPI versionada junto ao código.
 
-## Padrões de API
+## Status e erros
 
-### 1. Convenção de Nomes e Recursos
+Use códigos HTTP conforme o contrato e diferencie erro sintático de regra de
+domínio. `400` e `422` podem ser usados para validação conforme framework e
+convenção escolhidos; padronize e documente. `500` não deve revelar traceback,
+segredos, prompts ou dados rejeitados.
 
-✅ **Nomes no plural, verbos HTTP semânticos**
-```
-GET    /api/v1/orders              → listar pedidos
-POST   /api/v1/orders              → criar pedido
-GET    /api/v1/orders/{id}         → obter um pedido
-PUT    /api/v1/orders/{id}         → substituir pedido (idempotente)
-PATCH  /api/v1/orders/{id}         → atualizar parcialmente
-DELETE /api/v1/orders/{id}         → deletar pedido
-```
+Para uma API JSON, considere o formato Problem Details (RFC 9457), com campos
+estáveis como `type`, `title`, `status`, `detail` seguro e `instance`. Erros
+por campo podem ser uma extensão documentada; não inclua valores recebidos.
 
-❌ **Antipadrões**
-```
-GET  /api/getOrder             → verbo no nome
-POST /api/orders/create        → verbo redundante
-GET  /api/order/1              → singular
-```
+## Pydantic e frameworks
 
-### 2. Status HTTP Corretos
+- Reutilize modelos Pydantic de request/response quando forem contratos
+  externos adequados; não exponha automaticamente modelos internos.
+- FastAPI pode gerar OpenAPI a partir de type hints e modelos Pydantic, se for
+  selecionado como framework.
+- Em qualquer framework, mantenha validação e lógica de aplicação fora do
+  handler/controller e não acople o domínio à camada HTTP.
+- Teste contratos com cliente de teste do framework e casos de status, schema,
+  autenticação, limites e erros; use servidor real apenas quando necessário.
 
-| Código | Significado | Quando usar |
-|--------|-------------|------------|
-| `200` | OK | Sucesso com corpo na resposta |
-| `201` | Created | Criação bem-sucedida (POST) |
-| `204` | No Content | Sucesso, sem corpo (PUT, DELETE) |
-| `400` | Bad Request | Erro de validação de entrada |
-| `404` | Not Found | Recurso não encontrado |
-| `409` | Conflict | Conflito (ex: violação de constraint) |
-| `422` | Unprocessable Entity | Regra de negócio violada |
-| `500` | Internal Server Error | Erro não tratado |
+## Compatibilidade de contrato
 
-### 3. Formato de Resposta Padrão
+- Adições opcionais podem ser compatíveis, mas confirme consumidores e schema
+  antes de assumir.
+- Alterar/remover campo obrigatório, tipo ou semântica costuma ser breaking.
+- Versione endpoint/schema para mudanças incompatíveis e documente depreciação.
 
-**Sucesso com um recurso (200, 201):** o recurso vai direto no corpo, sem envelope.
-```json
-GET /api/v1/orders/{id}
+## Como responder
 
-{ "id": "7d36ce98-...", "status": "PENDING", "total": { "amount": 110.00, "currency": "BRL" } }
-```
-
-**Sucesso com uma coleção:** sempre paginada e envelopada em `{data, pagination}` (ver seção 4). Nunca devolva um array solto: ele não comporta metadados sem quebrar o contrato.
-
-**Erro (RFC 7807 — Problem Details):**
-```json
-{
-  "type": "https://api.exemplo.com/errors/validation-error",
-  "title": "Validation Error",
-  "status": 422,
-  "detail": "Campo 'email' é obrigatório",
-  "instance": "/api/v1/orders",
-  "errors": [
-    {
-      "field": "email",
-      "message": "Email inválido"
-    }
-  ]
-}
-```
-
-Use `ProblemDetail` nativo do Spring Boot 3.x:
-
-```java
-@ExceptionHandler(ValidationException.class)
-public ProblemDetail handleValidation(ValidationException ex) {
-    ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-    detail.setTitle("Validation Error");
-    detail.setDetail(ex.getMessage());
-    return detail;
-}
-```
-
-### 4. Paginação Padronizada
-
-Regras:
-- `page` começa em **1**; `size` padrão 20, máximo 100.
-- Ordem **estável** (ex.: mais recente primeiro, com o ID como desempate); sem ela, páginas repetem ou pulam itens.
-- Parâmetro fora dos limites responde **400**, nunca 500: valide na borda (`@Min`/`@Max`, que também documentam o OpenAPI) e no objeto de paginação da camada de aplicação.
-- A paginação é um conceito da camada de aplicação: a porta de saída recebe e devolve tipos próprios, sem `org.springframework.data`.
-
-```json
-GET /api/v1/orders?page=1&size=20
-
-{
-  "data": [ /* items */ ],
-  "pagination": {
-    "page": 1,
-    "size": 20,
-    "totalItems": 150,
-    "totalPages": 8,
-    "hasNext": true,
-    "hasPrevious": false
-  }
-}
-```
-
-Ou com **cursor** (melhor para grandes datasets):
-```json
-GET /api/v1/orders?cursor=abc123&limit=20
-
-{
-  "data": [ /* items */ ],
-  "pagination": {
-    "nextCursor": "xyz789",
-    "prevCursor": "def456",
-    "hasNext": true
-  }
-}
-```
-
-### 5. Versionamento
-
-**Via path (recomendado):**
-```
-GET /api/v1/orders
-GET /api/v2/orders  → mudanças breaking
-```
-
-**Via header:**
-```
-Accept: application/vnd.exemplo.v1+json
-```
-
-**Regra**: Mudanças breaking exigem nova versão. Nunca altere um endpoint silenciosamente.
-
-## Documentação com OpenAPI/Swagger
-
-### Dependência Maven
-```xml
-<dependency>
-    <groupId>org.springdoc</groupId>
-    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-    <version>2.x.x</version>
-</dependency>
-```
-
-Para stack reativa, use `springdoc-openapi-starter-webflux-ui`.
-
-### Regras de Documentação
-- Toda controller pública tem `@Tag`, `@Operation` e `@ApiResponse`.
-- DTOs de request/response documentados com `@Schema(description = ...)`.
-- A especificação é versionada junto com a API (mesma estratégia de versionamento).
-
-### Anotações Essenciais
-```java
-@Tag(name = "Orders", description = "Gerenciamento de pedidos")
-@RestController
-@RequestMapping("/api/v1/orders")
-public class OrderController {
-    
-    @Operation(
-        summary = "Listar pedidos",
-        description = "Retorna lista paginada de pedidos do usuário autenticado"
-    )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Lista de pedidos",
-        content = @Content(schema = @Schema(implementation = OrderResponse.class))
-    )
-    @GetMapping
-    public ResponseEntity<PagedResponse<OrderResponse>> list(
-        @ParameterObject @PageableDefault(size = 20) Pageable pageable
-    ) {
-        // ...
-    }
-}
-
-@Schema(description = "Resposta de pedido")
-public record OrderResponse(
-    @Schema(description = "ID único do pedido") Long id,
-    @Schema(description = "Status do pedido") String status,
-    @Schema(description = "Data de criação") LocalDateTime createdAt
-) {}
-```
-
-### URLs de Acesso
-- **UI Swagger**: `/swagger-ui.html`
-- **Spec JSON**: `/v3/api-docs`
-- **Spec YAML**: `/v3/api-docs.yaml`
-
-## Imutabilidade de Contrato
-
-- Adicione campos opcionais sem quebra (forward compatibility)
-- Nunca remova campos obrigatórios (breaking change)
-- Nunca altere o significado/tipo de um campo (breaking change)
-- Documente deprecações antes de remover
-
-## Como Responder
-
-1. **Análise**: Revisar design do endpoint/contrato
-2. **Aplicação**: Sugerir ajustes conforme padrões
-3. **Implementação**: Código com anotações e configuração
-4. **Documentação**: OpenAPI/Swagger pronto
+1. Confirme se é API pública, interna ou inexistente ainda.
+2. Defina request, response, validação, erros, segurança e compatibilidade.
+3. Gere exemplos Python apenas para framework escolhido; não assuma FastAPI.
+4. Não documente a função local Maker-Checker como endpoint existente.

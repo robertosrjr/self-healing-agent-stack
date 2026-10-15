@@ -36,26 +36,26 @@
 
 ### CONSTRUCTION PHASE
 
-- [ ] U1 — Functional Design: Maker-Checker and schema contracts — artifacts complete; awaiting explicit approval
-- [ ] U1 — NFR Requirements — pending Functional Design approval
-- [ ] U1 — NFR Design — pending NFR Requirements approval
+- [x] U1 — Functional Design: Maker-Checker and schema contracts — approved by user on 2026-10-14
+- [x] U1 — NFR Requirements — approved by user on 2026-10-14; Pydantic v2 selected
+- [x] U1 — NFR Design — approved by user on 2026-10-14
 - [ ] U1 — Infrastructure Design — skipped for the local prototype increment; reconsider when external execution infrastructure is introduced
-- [ ] U1 — Code Generation — pending design approvals
-- [ ] Build and Test — pending
+- [x] U1 — Code Generation — approved by user on 2026-10-14; Infrastructure Design skipped for local R1
+- [x] Build and Test — concluído em 2026-10-14; 29 testes passaram
 
 ### OPERATIONS PHASE
 
-- [ ] Operations — placeholder / pending
+- [x] Operations — placeholder acknowledged by user; no deployment or operational activities performed
 
 ## Current Status
 
 - **Lifecycle Phase:** CONSTRUCTION
-- **Current Stage:** Functional Design review — U1 (Maker-Checker and Schema Contracts)
-- **Next Stage:** NFR Requirements — U1 (after Functional Design approval)
-- **Status:** User approved the existing inception artifacts as a basis and authorized alignment to SDD v5 and continuation into Construction. Functional Design artifacts are complete; awaiting explicit approval to continue to NFR Requirements.
+- **Current Stage:** Operations — placeholder acknowledged
+- **Next Stage:** Planejar o próximo incremento de aprendizado, R2 — autorização determinística e guardrails.
+- **Status:** U1 concluída; Build and Test passou com 29 testes unitários e 13 testes focados em contratos/segurança. O placeholder de Operations foi reconhecido sem executar deploy ou atividades operacionais; skills relacionadas foram adaptadas à stack Python. O protótipo permanece não produtivo.
 
 ## Initial Scope
 
 Use the existing Step 1 ReAct prototype as a learning foundation and evolve it incrementally toward the architecture-target described by SDD v5. The immediate learning increment is an orchestrated Maker-Checker flow with validated input/output schemas. External authorization and guardrails remain subsequent increments; the target architecture also includes CI/CD failure intake, diagnosis, patch proposals, isolated regression testing, deterministic quality gates, auditability, and human approval for Production promotion. These target capabilities are not implied to exist in the current prototype.
 
-This work remains intentionally incremental: the project is currently a brownfield prototype, not a production-ready self-healing system. R1 functional design is complete and awaiting review; after approval, define NFR/schema-validation technology, then continue per-unit design before code generation.
+This work remains intentionally incremental: the project is currently a brownfield prototype, not a production-ready self-healing system. R1 Functional Design, NFR Requirements, NFR Design, Code Generation and Build and Test are complete; Operations is a placeholder.

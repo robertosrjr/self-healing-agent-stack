@@ -1,30 +1,43 @@
 ---
 name: lgpd-sre-compliance-skill
-description: "Use when auditing or implementing LGPD privacy controls for Java/Spring applications, including telemetry minimization, PII redaction, retention, backups, access control, and least privilege."
+description: "Use when auditing or implementing privacy-by-design and LGPD controls in Python systems, including telemetry minimization, PII handling, retention, backups, and access control."
 ---
 
-# LGPD SRE Compliance
+# LGPD e Privacidade Operacional para Python
 
-## Scope
-
-Use this skill for privacy-by-design review of code, telemetry, deployment, backups, and operational access. It is an engineering control guide, not legal advice.
+Esta skill orienta controles de engenharia de privacidade em código e
+telemetria Python; não substitui análise jurídica. Considere dados do usuário,
+logs de pipeline, diffs, prompts e saídas de modelos como potencialmente
+sensíveis.
 
 ## Workflow
 
-1. Search for PII fields, secrets, tokens, credentials, raw payloads, and identifiers in logs, traces, metrics, backups, and test data.
-2. Minimize collection at the source; do not rely on downstream redaction alone.
-3. Define masking or pseudonymization only when the diagnostic value justifies retaining a derived value.
-4. Review retention, access, auditability, incident response, and environment separation.
-5. Validate with static search, focused tests, and a telemetry field inventory.
+1. Localize dados pessoais, segredos, tokens, payloads brutos e identificadores
+   em entradas, prompts, logs, traces, métricas, backups e dados de teste.
+2. Minimize na origem: não envie nem registre dados que não sejam necessários
+   para a tarefa.
+3. Avalie retenção, acesso, ambiente, finalidade e possibilidade de vincular
+   identificadores técnicos a pessoas.
+4. Use sanitização antes do logger somente quando a coleta for necessária;
+   redaction é proteção adicional, não justificativa para coletar tudo.
+5. Teste que logs e erros não exponham conteúdo rejeitado, credenciais ou PII.
+6. Documente riscos residuais e exija revisão apropriada antes de ligar dados
+   reais ou ambientes operacionais.
 
-## Rules
+## Regras para a aplicação
 
-- Never log request/response bodies or financial payloads by default.
-- Never use PII or high-cardinality identifiers as metric tags.
-- Treat technical IDs as potentially personal data when linkable to a person.
-- Require least privilege and auditable break-glass access in operations.
-- Coordinate implementation with logging, metrics, tracing, and resilience specialist skills.
+- Não registre prompts/respostas completos, corpos de request, logs CI brutos,
+  diffs ou valores de campos de erro por padrão.
+- Não use PII ou IDs de alta cardinalidade em labels de métricas.
+- Credenciais ficam fora do código e de arquivos versionados; arquivos locais
+  de ambiente não devem ser adicionados ao controle de versão.
+- Defina retenção, controle de acesso, exclusão e trilha de auditoria antes de
+  operar dados reais. O R1 local não oferece auditoria imutável nem controles
+  operacionais.
+- Não prometa conformidade LGPD somente com regex ou testes unitários.
 
-## Reference
+## Referência de mascaramento
 
-See `references/lgpd-sre-compliance-skill.md` for the detailed audit workflow and examples.
+Consulte [lgpd-sre-compliance-skill.md](references/lgpd-sre-compliance-skill.md)
+para o padrão Python do repositório. Minimize antes de mascarar e não duplique
+implementações de sanitização sem necessidade.
